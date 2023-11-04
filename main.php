@@ -11,8 +11,9 @@ $password = 'A951753d!81902018B';
 $database = 'ghulqul_face_app';
 
 $data = json_decode(file_get_contents('php://input'), TRUE);
-//file_put_contents('file.txt', '$data: '.print_r($data, 1)."\n", FILE_APPEND);
+// file_put_contents('file.txt', '$data: '.print_r($data, 1)."\n", FILE_APPEND);
 $mysqli = new mysqli($host, $user, $password, $database);
+$mysqli->set_charset('utf8mb4');
 
 // Подготовьте данные для вставки в таблицу
 $update_id = $data['update_id'];
@@ -48,7 +49,7 @@ function showMatches ($token, $chat_id, $mysqli) {
                                                              OR (first_id = '$chat_id' and second_rate = true and first_rate = true) ";
 	$resultLikeQueue = $mysqli->query($sqlLikeQueue);
     if ($resultLikeQueue->num_rows == 0) {
-		sendTelegramMessage ($token, $chat_id, 'У вас ещё нет пар :с', 0, $mysqli);
+		sendTelegramMessage ($token, $chat_id, 'У вас пока нет пар. Вернитесь позже)', 0, $mysqli);
         $sqlFilter = ("UPDATE users SET match_menu_flag = true WHERE chat_id = '$chat_id'");
         $mysqli->query($sqlFilter);
         deleteMenu($token, $chat_id, $mysqli);
@@ -73,7 +74,7 @@ function showMatches ($token, $chat_id, $mysqli) {
 	}
     $sqlFilter = ("UPDATE users SET match_menu_flag = true WHERE chat_id = '$chat_id'");
     $mysqli->query($sqlFilter);
-	sendTelegramMessage ($token, $chat_id, 'Главное меню:', 7, $mysqli);
+	sendTelegramMessage ($token, $chat_id, 'Ваши лайки:', 7, $mysqli);
 	return;
 }
 
@@ -1332,7 +1333,7 @@ function registerStep_9 ($token, $chat_id, $mysqli) {
 }
 
 function  registerFinish ($token, $chat_id, $mysqli) {
-    sendTelegramMessage($token, $chat_id, 'Регистрация завершена успешно!', 0, $mysqli);
+    sendTelegramMessage($token, $chat_id, 'Регистрация завершена успешно!', 8, $mysqli);
     $reg_step = 10;
     $sql = ("UPDATE users SET reg_step = '$reg_step' WHERE chat_id = '$chat_id'");
     $mysqli->query($sql);
