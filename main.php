@@ -2,6 +2,7 @@
 
 ini_set('log_errors', 1);
 ini_set('error_log', '/home/g/ghulqul/facehookapp.ru/public_html/source/FaceApp/PHP_errors_test3.log');
+error_reporting(E_ERROR); // Устанавливаем уровень ошибок
 
 $token = '6660548794:AAHhy82DMJtws1NlMj7VIx0_zDw8c_MswWk';
 
@@ -250,8 +251,9 @@ function deleteMenu($chat_id, $token, $mysqli) {
 
 function editTelegramMessage($token, $chat_id, $step, $mysqli) {
     $sql = "SELECT message_id FROM msg_webhook WHERE chat_id = '$chat_id' AND (text = '/distance' OR text = '/filter'
-                                                                            OR text = '/myprofilemenu' OR text = '/matchmenu' OR text = 'Пары'
-                                                                            OR text = '/combacktostartmatches' OR text = '/combacktostartmenu') ORDER BY id DESC LIMIT 1";
+                                                                            OR text = '/myprofilemenu' OR text = '/matchmenu'
+                                                                            OR text = '/combacktostartmatches' OR text = '/combacktostartmenu')
+                                                                            ORDER BY id DESC LIMIT 1";
     $result = $mysqli->query($sql);
     $message_id = $result->fetch_assoc();
     switch ($step) {
@@ -259,15 +261,22 @@ function editTelegramMessage($token, $chat_id, $step, $mysqli) {
             $sqlFilter = "SELECT filter_location, favorite_gender, favorite_age_min, favorite_age_max, show_flag FROM users WHERE chat_id = '$chat_id'";
             $resultFilter = $mysqli->query($sqlFilter);
             $filter = $resultFilter->fetch_assoc();
+            if ($filter['filter_location'] == 'global') {
+              $filter_location = 'без ограничений';
+            }
+            elseif ($filter['filter_location'] == 'local') {
+              $filter_location = 'по городу';
+            }
             if ($filter['show_flag'] == true) {
                 $getQuery = array(
-                    "chat_id" 	=> $chat_id,
+                    "chat_id" => $chat_id,
                     "message_id" => $message_id['message_id'],
+                    "text" => 'Настройка фильтра показа анкет:',
                     'reply_markup' => json_encode(array(
                         'inline_keyboard' => array(
                             array(
                                 array(
-                                    'text' => 'Растояние поиска: '.$filter['filter_location'],
+                                    'text' => 'Расстояние поиска: '.$filter_location,
                                     'callback_data' => '/distance',
                                 ),
                             ),
@@ -286,7 +295,7 @@ function editTelegramMessage($token, $chat_id, $step, $mysqli) {
                             array(
                                 array(
                                     'text' => 'Продолжить просмотр анкет',
-                                    'callback_data' => '/combacktostartmatches', ////////////////....................................................................................
+                                    'callback_data' => '/combacktostartmatches',
                                 ),
                             ),
                         ),
@@ -303,7 +312,7 @@ function editTelegramMessage($token, $chat_id, $step, $mysqli) {
                         'inline_keyboard' => array(
                             array(
                                 array(
-                                    'text' => 'Растояние поиска: '.$filter['filter_location'],
+                                    'text' => 'Расстояние поиска: '.$filter_location,
                                     'callback_data' => '/distance',
                                 ),
                             ),
@@ -563,6 +572,12 @@ function sendTelegramMessage($token, $chat_id, $text, $reg_step, $mysqli) {
             $sqlFilter = "SELECT filter_location, favorite_gender, favorite_age_min, favorite_age_max, show_flag FROM users WHERE chat_id = '$chat_id'";
             $resultFilter = $mysqli->query($sqlFilter);
             $filter = $resultFilter->fetch_assoc();
+            if ($filter['filter_location'] == 'global') {
+              $filter_location = 'без ограничений';
+            }
+            elseif ($filter['filter_location'] == 'local') {
+              $filter_location = 'по городу';
+            }
             if ($filter['show_flag'] == true) {
                 $getQuery = array(
                     "chat_id" => $chat_id,
@@ -573,7 +588,7 @@ function sendTelegramMessage($token, $chat_id, $text, $reg_step, $mysqli) {
                         'inline_keyboard' => array(
                             array(
                                 array(
-                                    'text' => 'Растояние поиска: '.$filter['filter_location'],
+                                    'text' => 'Расстояние поиска: '.$filter_location,
                                     'callback_data' => '/distance',
                                 ),
                             ),
@@ -610,7 +625,7 @@ function sendTelegramMessage($token, $chat_id, $text, $reg_step, $mysqli) {
                         'inline_keyboard' => array(
                             array(
                                 array(
-                                    'text' => 'Растояние поиска: '.$filter['filter_location'],
+                                    'text' => 'Расстояние поиска: '.$filter_location,
                                     'callback_data' => '/distance',
                                 ),
                             ),
@@ -910,7 +925,7 @@ function sendTelegramMessage($token, $chat_id, $text, $reg_step, $mysqli) {
                                 'text' => '👎',
                                 ),
                                 array(
-                                'text' => '🔙',
+                                'text' => '↩️',
                                 ),
                             )),
                             'resize_keyboard' => TRUE,
@@ -998,6 +1013,7 @@ function getFileId ($file_id, $chat_id, $image_number, $mysqli) {
     return;
 }
 
+//Функция расчёта процента совместимости
 function kendallTauCompatibility($answers1, $answers2) {
     if (count($answers1) != 5 || count($answers2) != 5) {
         return false; // Проверка на 5 ответов для каждого человека
@@ -1333,7 +1349,7 @@ function registerStep_9 ($token, $chat_id, $mysqli) {
 }
 
 function  registerFinish ($token, $chat_id, $mysqli) {
-    sendTelegramMessage($token, $chat_id, 'Регистрация завершена успешно!', 8, $mysqli);
+    sendTelegramMessage($token, $chat_id, 'Регистрация завершена успешно!', 0, $mysqli);
     $reg_step = 10;
     $sql = ("UPDATE users SET reg_step = '$reg_step' WHERE chat_id = '$chat_id'");
     $mysqli->query($sql);
@@ -1600,10 +1616,10 @@ function responseProcessingCity ($token, $chat_id, $text, $location, $mysqli) {
         $mysqli->query($sqlReg);
         $sqlLocCities = "SELECT city, latitude, longitude FROM cities"; // Берём список существующих городов
         $result = $mysqli->query($sqlLocCities);
-        $maxDistance = 100000; // Максимальное растояние для нахождение ближайшего города
+        $maxDistance = 100000; // Максимальное расстояние для нахождение ближайшего города
         if ($result) {
             while ($rowsLocCities = $result->fetch_assoc()) {
-                // Расчитываем растояние между точкой и городом
+                // Расчитываем расстояние между точкой и городом
                 $distance = haversineDistance($location['latitude'], $location['longitude'], $rowsLocCities['latitude'], $rowsLocCities['longitude']);
                 if ($distance < $maxDistance) { //Нахождение ближайшего города к точке
                     $maxDistance = $distance;
@@ -1671,25 +1687,21 @@ function responseProcessingCaption ($token, $chat_id, $text, $mysqli) {
 }
 
 function responseProcessingPhoto_1 ($token, $chat_id, $file_id, $video_id, $mysqli) {
-    if (isset($file_id) || isset($video_id)) {
-        if (isset($video_id)) {
-          $sqlReg = ("UPDATE users SET video_1 = true WHERE chat_id = '$chat_id'");
-          $mysqli->query($sqlReg);
-          $file_id = $video_id;
-        }
-        else {
-          $sqlReg = ("UPDATE users SET video_1 = false WHERE chat_id = '$chat_id'");
-          $mysqli->query($sqlReg);
-        }
-        $image_number = 'image';
-        getFileId ($file_id, $chat_id, $image_number, $mysqli);
-        registerStep_8 ($token, $chat_id, $mysqli);
-        return;
-    }
-    else {
-        sendTelegramMessage($token, $chat_id, 'Отправь своё фото или видео', 0, $mysqli);
-        return;
-    }
+  if (isset($file_id) || isset($video_id)) {
+      if (isset($video_id)) {
+        $sqlReg = ("UPDATE users SET video_1 = true WHERE chat_id = '$chat_id'");
+        $mysqli->query($sqlReg);
+        $file_id = $video_id;
+      }
+      $image_number = 'image';
+      getFileId ($file_id, $chat_id, $image_number, $mysqli);
+      registerStep_8 ($token, $chat_id, $mysqli);
+      return;
+  }
+  else {
+      sendTelegramMessage($token, $chat_id, 'Отправь своё фото или видео', 0, $mysqli);
+      return;
+  }
 }
 
 function responseProcessingPhoto_2 ($token, $chat_id, $text, $file_id, $video_id, $mysqli) {
@@ -1709,6 +1721,13 @@ function responseProcessingPhoto_2 ($token, $chat_id, $text, $file_id, $video_id
         return;
     }
     elseif ($text == '/ready'|| $text == 'Завершить регистрацию:') {
+        $sqlCountVideo = ("SELECT video_1 FROM users WHERE chat_id = '$chat_id'");
+        $resultCountVideo = $mysqli->query($sqlCountVideo);
+        $rowCountVideo = $resultCountVideo->fetch_assoc();
+        if ($rowCountVideo ['video_1'] == true) {
+            sendTelegramMessage($token, $chat_id, 'Необходимо добавить хотя бы одно фото', 0, $mysqli);
+            return;
+        }
         registerFinish ($token, $chat_id, $mysqli);
         showProfile ($token, $chat_id, $chat_id, $mysqli);
         $sqlFilter = ("UPDATE users SET my_profile_menu_flag = true WHERE chat_id = '$chat_id'");
@@ -1725,6 +1744,13 @@ function responseProcessingPhoto_2 ($token, $chat_id, $text, $file_id, $video_id
 function responseProcessingPhoto_3 ($token, $chat_id, $text, $file_id, $video_id, $mysqli) {
   if (isset($file_id) || isset($video_id)) {
         if (isset($video_id)) {
+          $sqlCountVideo = ("SELECT video_1, video_2 FROM users WHERE chat_id = '$chat_id'");
+          $resultCountVideo = $mysqli->query($sqlCountVideo);
+          $rowCountVideo = $resultCountVideo->fetch_assoc();
+          if ($rowCountVideo ['video_1'] == true && $rowCountVideo ['video_2'] == true) {
+              sendTelegramMessage($token, $chat_id, 'Необходимо добавить хотя бы одно фото', 0, $mysqli);
+              return;
+          }
           $sqlReg = ("UPDATE users SET video_3 = true WHERE chat_id = '$chat_id'");
           $mysqli->query($sqlReg);
           $file_id = $video_id;
@@ -1743,6 +1769,13 @@ function responseProcessingPhoto_3 ($token, $chat_id, $text, $file_id, $video_id
         return;
     }
     elseif ($text == '/ready'||$text == 'Завершить регистрацию:') {
+        $sqlCountVideo = ("SELECT video_1, video_2 FROM users WHERE chat_id = '$chat_id'");
+        $resultCountVideo = $mysqli->query($sqlCountVideo);
+        $rowCountVideo = $resultCountVideo->fetch_assoc();
+        if ($rowCountVideo ['video_1'] == true && $rowCountVideo ['video_2'] == true) {
+            sendTelegramMessage($token, $chat_id, 'Необходимо добавить хотя бы одно фото', 0, $mysqli);
+            return;
+        }
         registerFinish ($token, $chat_id, $mysqli);
         showProfile ($token, $chat_id, $chat_id, $mysqli);
         $sqlFilter = ("UPDATE users SET my_profile_menu_flag = true WHERE chat_id = '$chat_id'");
@@ -1943,9 +1976,12 @@ function processSwitchCommand($token, $chat_id, $username, $text, $mysqli) {
             $sqlCheckReg = "SELECT * FROM users WHERE chat_id = '$chat_id'";
             $resultCheck = $mysqli->query($sqlCheckReg);
             if ($resultCheck->num_rows == 0) {
-                $sqlNewReg = "INSERT INTO users (chat_id, username, show_flag, coming_flag, filter_flag, filter_location,
-                                                 favorite_age_min, favorite_age_max, filter_age_flag, filter_gender_flag)
-                                        VALUES ('$chat_id', '$username', 'false', 'false', 'false', 'local', '18', '25', 'false', 'false')";
+                $sqlNewReg =
+                "INSERT INTO users
+                (chat_id, username, show_flag, coming_flag, filter_flag, filter_location, favorite_age_min, favorite_age_max, filter_age_flag, filter_gender_flag, test_flag, match_menu_flag, my_profile_menu_flag, main_menu_flag, video_1, video_2, video_3)
+                VALUES
+                ('$chat_id', '$username', 'false', 'false', 'false', 'local',
+                '18', '25', 'false', 'false', 'false', 'false', 'false', 'false', 'false', 'false', 'false')";
                 $mysqli->query($sqlNewReg);
             }
             registerStep_1($token, $chat_id, $mysqli);
@@ -2195,7 +2231,7 @@ function processSwitchCommand($token, $chat_id, $username, $text, $mysqli) {
             sendTelegramMessage ($token, $chat_id, '🏠', 8, $mysqli);
             sendTelegramMessage ($token, $chat_id, 'Главное меню:', 1, $mysqli);
         }
-        elseif ($text == '🔙') {
+        elseif ($text == '↩️') {
             if ($showFlag['show_flag'] == true) {
                 $sqlLike = ("UPDATE users SET show_flag = FALSE WHERE chat_id = '$chat_id'");
             }
