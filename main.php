@@ -144,12 +144,14 @@ function showAlgorithm ($token, $chat_id, $mysqli) {
                 $sql = "SELECT chat_id FROM users
                         WHERE chat_id != '$chat_id' AND gender = '$favorite_gender' AND (favorite_gender = '$gender' OR favorite_gender = 'Все')
                                                     AND city = '$city' AND age >= '$favorite_age_min' AND age <= '$favorite_age_max'
+                                                    AND reg_step = '10'
                                                     AND chat_id NOT IN ($rowsAllShowed_separated)";
             }
             else {
                 $sql = "SELECT chat_id FROM users
                         WHERE chat_id != '$chat_id' AND gender = '$favorite_gender' AND (favorite_gender = '$gender' OR favorite_gender = 'Все')
                                                     AND age >= '$favorite_age_min' AND age <= '$favorite_age_max'
+                                                    AND reg_step = '10'
                                                     AND chat_id NOT IN ($rowsAllShowed_separated) AND filter_location = '$filter_location'";
             }
 
@@ -159,12 +161,14 @@ function showAlgorithm ($token, $chat_id, $mysqli) {
                 $sql = "SELECT chat_id FROM users
                         WHERE chat_id != '$chat_id' AND (favorite_gender = '$gender' OR favorite_gender = 'Все') AND city = '$city'
                                                     AND age >= '$favorite_age_min' AND age <= '$favorite_age_max'
+                                                    AND reg_step = '10'
                                                     AND chat_id NOT IN ($rowsAllShowed_separated)";
             }
             else {
                 $sql = "SELECT chat_id FROM users
                         WHERE chat_id != '$chat_id' AND (favorite_gender = '$gender' OR favorite_gender = 'Все')
                                                     AND age >= '$favorite_age_min' AND age <= '$favorite_age_max'
+                                                    AND reg_step = '10'
                                                     AND chat_id NOT IN ($rowsAllShowed_separated) AND filter_location = '$filter_location'";
             }
         }
@@ -174,13 +178,15 @@ function showAlgorithm ($token, $chat_id, $mysqli) {
             $sql = "SELECT chat_id FROM users
                     WHERE chat_id != '$chat_id' AND (favorite_gender = '$gender' OR favorite_gender = 'Все')
                                                 AND age >= '$favorite_age_min' AND age <= '$favorite_age_max'
-                                                AND gender = '$favorite_gender' AND city = '$city'";
+                                                AND gender = '$favorite_gender' AND city = '$city'
+                                                AND reg_step = '10'";
         }
         else {
             $sql = "SELECT chat_id FROM users
                     WHERE chat_id != '$chat_id' AND (favorite_gender = '$gender' OR favorite_gender = 'Все')
                                                 AND age >= '$favorite_age_min' AND age <= '$favorite_age_max'
-                                                AND gender = '$favorite_gender' AND filter_location = '$filter_location'";
+                                                AND gender = '$favorite_gender' AND filter_location = '$filter_location'
+                                                AND reg_step = '10'";
         }
     }
     else {
@@ -188,12 +194,14 @@ function showAlgorithm ($token, $chat_id, $mysqli) {
             $sql = "SELECT chat_id FROM users
                     WHERE chat_id != '$chat_id' AND (favorite_gender = '$gender' OR favorite_gender = 'Все')
                                                 AND age >= '$favorite_age_min' AND age <= '$favorite_age_max'
-                                                AND city = '$city'";
+                                                AND city = '$city'
+                                                AND reg_step = '10'";
         }
         else {
             $sql = "SELECT chat_id FROM users
                     WHERE chat_id != '$chat_id' AND (favorite_gender = '$gender' OR favorite_gender = 'Все')
-                                                AND age >= '$favorite_age_min' AND age <= '$favorite_age_max' AND filter_location = '$filter_location'";
+                                                AND age >= '$favorite_age_min' AND age <= '$favorite_age_max' AND filter_location = '$filter_location'
+                                                AND reg_step = '10'";
         }
     }
     $result = $mysqli->query($sql);
@@ -735,87 +743,104 @@ function sendTelegramMessage($token, $chat_id, $text, $reg_step, $mysqli) {
                         ),
                     ),
                     'one_time_keyboard' => true,
-                    'resize_keyboard' => true,  // Здесь также используйте true
+                    'resize_keyboard' => true,
                 )),
             );
-
             break;
+      case 5.1:
+        $getQuery = array(
+            "chat_id" => $chat_id,
+            "text" => $text,
+            'disable_notification' => true,
+            'reply_markup' => json_encode(array(
+                'keyboard' => array(
+                    array(
+                        array(
+                            'text' => 'Пропустить',
+                        ),
+                    ),
+                ),
+                'one_time_keyboard' => true,
+                'resize_keyboard' => true,
+            )),
+        );
+        break;
         case 6:
-        $sqlStatusTest = "SELECT test_step FROM users WHERE chat_id = '$chat_id'";
-        $resultStatusTest = $mysqli->query($sqlStatusTest);
-        $statusTest = $resultStatusTest->fetch_assoc();
-        if ($statusTest ['test_step'] == 10) {
-            $getQuery = array(
-                "chat_id" => $chat_id,
-                "text" => $text,
-                'disable_notification' => true,
-                'reply_markup' => json_encode(array(
-                    'inline_keyboard' => array(
-                        array(
-                            array(
-                                'text' => 'Soul Mate тест: ✅',
-                                'callback_data' => '/soulmatetest',
-                            ),
-                        ),
-                        array(
-                            array(
-                                'text' => 'Редактировать мою анкету',
-                                'callback_data' => '/register',
-                            ),
-                        ),
-                        array(
-                            array(
-                                'text' => 'Показать мою анкету',
-                                'callback_data' => '/showprofile',
-                            ),
-                        ),
-                        array(
-                            array(
-                                'text' => 'В главное меню',
-                                'callback_data' => '/combacktostartmatches',
-                            ),
-                        ),
-                    ),
-                )),
-            );
-            break;
-        }
-        else {
-            $getQuery = array(
-                "chat_id" => $chat_id,
-                "text" => $text,
-                'disable_notification' => true,
-                'reply_markup' => json_encode(array(
-                    'inline_keyboard' => array(
-                        array(
-                            array(
-                                'text' => 'Soul Mate тест: ✖️',
-                                'callback_data' => '/soulmatetest',
-                            ),
-                        ),
-                        array(
-                            array(
-                                'text' => 'Редактировать мою анкету',
-                                'callback_data' => '/register',
-                            ),
-                        ),
-                        array(
-                            array(
-                                'text' => 'Показать мою анкету',
-                                'callback_data' => '/showprofile',
-                            ),
-                        ),
-                        array(
-                            array(
-                                'text' => 'В главное меню',
-                                'callback_data' => '/combacktostartmatches',
-                            ),
-                        ),
-                    ),
-                )),
-            );
-            break;
-        }
+          $sqlStatusTest = "SELECT test_step FROM users WHERE chat_id = '$chat_id'";
+          $resultStatusTest = $mysqli->query($sqlStatusTest);
+          $statusTest = $resultStatusTest->fetch_assoc();
+          if ($statusTest ['test_step'] == 10) {
+              $getQuery = array(
+                  "chat_id" => $chat_id,
+                  "text" => $text,
+                  'disable_notification' => true,
+                  'reply_markup' => json_encode(array(
+                      'inline_keyboard' => array(
+                          array(
+                              array(
+                                  'text' => 'Soul Mate тест: ✅',
+                                  'callback_data' => '/soulmatetest',
+                              ),
+                          ),
+                          array(
+                              array(
+                                  'text' => 'Редактировать мою анкету',
+                                  'callback_data' => '/register',
+                              ),
+                          ),
+                          array(
+                              array(
+                                  'text' => 'Показать мою анкету',
+                                  'callback_data' => '/showprofile',
+                              ),
+                          ),
+                          array(
+                              array(
+                                  'text' => 'В главное меню',
+                                  'callback_data' => '/combacktostartmatches',
+                              ),
+                          ),
+                      ),
+                  )),
+              );
+              break;
+          }
+          else {
+              $getQuery = array(
+                  "chat_id" => $chat_id,
+                  "text" => $text,
+                  'disable_notification' => true,
+                  'reply_markup' => json_encode(array(
+                      'inline_keyboard' => array(
+                          array(
+                              array(
+                                  'text' => 'Soul Mate тест: ✖️',
+                                  'callback_data' => '/soulmatetest',
+                              ),
+                          ),
+                          array(
+                              array(
+                                  'text' => 'Редактировать мою анкету',
+                                  'callback_data' => '/register',
+                              ),
+                          ),
+                          array(
+                              array(
+                                  'text' => 'Показать мою анкету',
+                                  'callback_data' => '/showprofile',
+                              ),
+                          ),
+                          array(
+                              array(
+                                  'text' => 'В главное меню',
+                                  'callback_data' => '/combacktostartmatches',
+                              ),
+                          ),
+                      ),
+                  )),
+              );
+              break;
+          }
         case 7:
             $sqlLikeQueue = "SELECT id FROM rate WHERE (second_id = '$chat_id' and first_rate = true and second_rate IS NULL)
                                                     OR (first_id = '$chat_id' and second_rate = true and first_rate IS NULL)";
@@ -934,34 +959,34 @@ function sendTelegramMessage($token, $chat_id, $text, $reg_step, $mysqli) {
             }
             break;
         case 11:
-            $getQuery = array(
-                "chat_id" 	=> $chat_id,
-                "text" => $text,
-                'remove_keyboard' => true,
-                'disable_notification' => true,
-                'reply_markup' => json_encode(array(
-                    'keyboard' => array(
-                        array(
-                            array(
-                            'text' => 'Полностью не согласен',
-                            ),
-                            array(
-                            'text' => 'Частично не согласен',
-                            ),
-                            array(
-                            'text' => 'Не уверен',
-                            ),
-                            array(
-                            'text' => 'Частично согласен',
-                            ),
-                            array(
-                            'text' => 'Полностью согласен',
-                            ),
-                        )),
-                        'resize_keyboard' => TRUE,
-                    )),
-            );
-            break;
+          $getQuery = array(
+            "chat_id" => $chat_id,
+            "text" => $text,
+            'remove_keyboard' => true,
+            'disable_notification' => true,
+            'reply_markup' => json_encode(array(
+                'keyboard' => array(
+                    // Создаем массив кнопок, каждая в отдельном вложенном массиве
+                    array(
+                        array('text' => 'Полностью не согласен'),
+                    ),
+                    array(
+                        array('text' => 'Частично не согласен'),
+                    ),
+                    array(
+                        array('text' => 'Не уверен'),
+                    ),
+                    array(
+                        array('text' => 'Частично согласен'),
+                    ),
+                    array(
+                        array('text' => 'Полностью согласен'),
+                    ),
+                ),
+                'resize_keyboard' => true,
+            )),
+          );
+          break;
     }
 
     $ch = curl_init("https://api.telegram.org/bot". $token ."/sendMessage?" . http_build_query($getQuery));
@@ -1317,7 +1342,7 @@ function registerStep_5 ($token, $chat_id, $mysqli) {
 }
 
 function registerStep_6 ($token, $chat_id, $mysqli) {
-    sendTelegramMessage($token, $chat_id, 'Расскажи о себе', 0, $mysqli);
+    sendTelegramMessage($token, $chat_id, 'Расскажи о себе', 5.1, $mysqli);
     $reg_step = 6;
     $sql = ("UPDATE users SET reg_step = '$reg_step' WHERE chat_id = '$chat_id'");
     $mysqli->query($sql);
@@ -1676,6 +1701,10 @@ function responseProcessingCity ($token, $chat_id, $text, $location, $mysqli) {
 }
 
 function responseProcessingCaption ($token, $chat_id, $text, $mysqli) {
+    if ($text == 'Пропустить') {
+      registerStep_7 ($token, $chat_id, $mysqli);
+      return;
+    }
     if (strlen($text)>1800) {
         sendTelegramMessage($token, $chat_id, 'Слишком длинное описание', 0, $mysqli);
         return;
@@ -1978,11 +2007,32 @@ function processSwitchCommand($token, $chat_id, $username, $text, $mysqli) {
             if ($resultCheck->num_rows == 0) {
                 $sqlNewReg =
                 "INSERT INTO users
-                (chat_id, username, show_flag, coming_flag, filter_flag, filter_location, favorite_age_min, favorite_age_max, filter_age_flag, filter_gender_flag, test_flag, match_menu_flag, my_profile_menu_flag, main_menu_flag, video_1, video_2, video_3)
+                (chat_id, username, description, show_flag, coming_flag, filter_flag, filter_location, favorite_age_min, favorite_age_max, filter_age_flag, filter_gender_flag, test_flag, match_menu_flag, my_profile_menu_flag, main_menu_flag, video_1, video_2, video_3)
                 VALUES
-                ('$chat_id', '$username', 'false', 'false', 'false', 'local',
+                ('$chat_id', '$username', NULL, 'false', 'false', 'false', 'local',
                 '18', '25', 'false', 'false', 'false', 'false', 'false', 'false', 'false', 'false', 'false')";
                 $mysqli->query($sqlNewReg);
+            }
+            else {
+              $sqlNewReg = "UPDATE users SET  username = '$username',
+                                              description = NULL,
+                                              show_flag = 'false',
+                                              coming_flag = 'false',
+                                              filter_flag = 'false',
+                                              filter_location = 'local',
+                                              favorite_age_min = '18',
+                                              favorite_age_max = '25',
+                                              filter_age_flag = 'false',
+                                              filter_gender_flag = 'false',
+                                              test_flag = 'false',
+                                              match_menu_flag = 'false',
+                                              my_profile_menu_flag = 'false',
+                                              main_menu_flag = 'false',
+                                              video_1 = 'false',
+                                              video_2 = 'false',
+                                              video_3 = 'false'
+                              WHERE chat_id = '$chat_id'";
+              $mysqli->query($sqlNewReg);
             }
             registerStep_1($token, $chat_id, $mysqli);
             return;
@@ -2116,6 +2166,7 @@ function processSwitchCommand($token, $chat_id, $username, $text, $mysqli) {
                     $sqlSetLike = ("UPDATE rate SET second_rate = TRUE WHERE id = {$matchSearchId['id']}");
                     $mysqli->query($sqlSetLike);
                 }
+                sendTelegramMessage($token, $match_id['last_shown_id'], 'Вы кому то понравились. Проверьте раздел Лайки.', 0, $mysqli);
                 if ($showFlag['show_flag'] == true) {
                     showAlgorithm ($token, $chat_id, $mysqli);
                 }
