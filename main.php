@@ -239,11 +239,11 @@ function deleteMenu($chat_id, $token, $mysqli) {
             WHERE chat_id = '$chat_id' AND (text = '/showprofile' OR text = '/startmatch' OR text = '/register'
                                             OR text = '/start' OR text = '/checklike' OR text = '/matches' OR text = '/age'
                                             OR text = '/combacktostartmatches' OR text = '/combacktostartmenu' OR text = '/favorite_gender'
-											                      OR text = '/soulmatetest')
+                                            OR text = '/soulmatetest' OR text = '/zodiacsign')
                                             ORDER BY id DESC LIMIT 1";
     $result = $mysqli->query($sql);
     $row = $result->fetch_assoc();
-        // Данные для запроса
+    // Данные для запроса
     $data = [
         'chat_id' => $chat_id,
         'message_id' => $row['message_id'],
@@ -395,47 +395,193 @@ function editTelegramMessage($token, $chat_id, $step, $mysqli) {
             $sqlStatusTest = "SELECT test_step FROM users WHERE chat_id = '$chat_id'";
             $resultStatusTest = $mysqli->query($sqlStatusTest);
             $statusTest = $resultStatusTest->fetch_assoc();
+            $sqlStatusZodiac = "SELECT * FROM zodiac_users WHERE chat_id = '$chat_id'";
+            $resultStatusZodiac = $mysqli->query($sqlStatusZodiac);
+            $statusZodiac = $resultStatusZodiac->fetch_assoc();
             if ($statusTest ['test_step'] == 10) {
-                $getQuery = array(
-                    "chat_id" => $chat_id,
-                    "message_id" => $message_id['message_id'],
-                    "text" => 'Меню анкеты:',
-                    'reply_markup' => json_encode(array(
-                        'inline_keyboard' => array(
-                            array(
-                                array(
-                                    'text' => 'Soul Mate тест: ✅',
-                                    'callback_data' => '/soulmatetest',
-                                ),
-                            ),
-                            array(
-                                array(
-                                    'text' => 'Редактировать мою анкету',
-                                    'callback_data' => '/register',
-                                ),
-                            ),
-                            array(
-                                array(
-                                    'text' => 'Показать мою анкету',
-                                    'callback_data' => '/showprofile',
-                                ),
-                            ),
-                            array(
-                                array(
-                                    'text' => 'В главное меню',
-                                    'callback_data' => '/combacktostartmatches',
-                                ),
-                            ),
-                        ),
-                    )),
-                );
-                break;
+                if ($resultStatusZodiac->num_rows == 0) {
+                  $getQuery = array(
+                      "chat_id" => $chat_id,
+                      "message_id" => $message_id['message_id'],
+                      "text" => 'Моя анкета:',
+                      'reply_markup' => json_encode(array(
+                          'inline_keyboard' => array(
+                              array(
+                                  array(
+                                      'text' => 'Soul Mate тест: ✅',
+                                      'callback_data' => '/soulmatetest',
+                                  ),
+                              ),
+                              array(
+                                  array(
+                                      'text' => 'Знак зодиака: ✖️',
+                                      'callback_data' => '/zodiacsign',
+                                  ),
+                              ),
+                              array(
+                                  array(
+                                      'text' => 'Редактировать мою анкету',
+                                      'callback_data' => '/register',
+                                  ),
+                              ),
+                              array(
+                                  array(
+                                      'text' => 'Показать мою анкету',
+                                      'callback_data' => '/showprofile',
+                                  ),
+                              ),
+                              array(
+                                  array(
+                                      'text' => 'В главное меню',
+                                      'callback_data' => '/combacktostartmatches',
+                                  ),
+                              ),
+                          ),
+                      )),
+                  );
+                  break;
+                }
+                elseif ($resultStatusZodiac->num_rows != 0) {
+                  if ($statusZodiac['zodiac_sign'] == 'Овен') {
+                    $sign_emoticon = "♈️";
+                  } elseif ($statusZodiac['zodiac_sign'] == 'Телец') {
+                    $sign_emoticon = "♉️";
+                  } elseif ($statusZodiac['zodiac_sign'] == 'Близнецы') {
+                    $sign_emoticon = "♊️";
+                  } elseif ($statusZodiac['zodiac_sign'] == 'Рак') {
+                    $sign_emoticon = "♋️";
+                  } elseif ($statusZodiac['zodiac_sign'] == 'Лев') {
+                    $sign_emoticon = "♌️";
+                  } elseif ($statusZodiac['zodiac_sign'] == 'Дева') {
+                    $sign_emoticon = "♍️";
+                  } elseif ($statusZodiac['zodiac_sign'] == 'Весы') {
+                    $sign_emoticon = "♎️";
+                  } elseif ($statusZodiac['zodiac_sign'] == 'Скорпион') {
+                    $sign_emoticon = "♏️";
+                  } elseif ($statusZodiac['zodiac_sign'] == 'Стрелец') {
+                    $sign_emoticon = "♐️";
+                  } elseif ($statusZodiac['zodiac_sign'] == 'Козерог') {
+                    $sign_emoticon = "♑️";
+                  } elseif ($statusZodiac['zodiac_sign'] == 'Водолей') {
+                    $sign_emoticon = "♒️";
+                  } elseif ($statusZodiac['zodiac_sign'] == 'Рыбы') {
+                    $sign_emoticon = "♓️";
+                  }
+                  $getQuery = array(
+                      "chat_id" => $chat_id,
+                      "message_id" => $message_id['message_id'],
+                      "text" => 'Моя анкета:',
+                      'reply_markup' => json_encode(array(
+                          'inline_keyboard' => array(
+                              array(
+                                  array(
+                                      'text' => 'Soul Mate тест: ✅',
+                                      'callback_data' => '/soulmatetest',
+                                  ),
+                              ),
+                              array(
+                                  array(
+                                      'text' => 'Знак зодиака: '.$sign_emoticon,
+                                      'callback_data' => '/zodiacsign',
+                                  ),
+                              ),
+                              array(
+                                  array(
+                                      'text' => 'Редактировать мою анкету',
+                                      'callback_data' => '/register',
+                                  ),
+                              ),
+                              array(
+                                  array(
+                                      'text' => 'Показать мою анкету',
+                                      'callback_data' => '/showprofile',
+                                  ),
+                              ),
+                              array(
+                                  array(
+                                      'text' => 'В главное меню',
+                                      'callback_data' => '/combacktostartmatches',
+                                  ),
+                              ),
+                          ),
+                      )),
+                  );
+                  break;
+                }
             }
             else {
-                $getQuery = array(
+                if ($resultStatusZodiac->num_rows == 0) {
+                  $getQuery = array(
+                      "chat_id" => $chat_id,
+                      "message_id" => $message_id['message_id'],
+                      "text" => 'Моя анкета:',
+                      'reply_markup' => json_encode(array(
+                          'inline_keyboard' => array(
+                              array(
+                                  array(
+                                      'text' => 'Soul Mate тест: ✖️',
+                                      'callback_data' => '/soulmatetest',
+                                  ),
+                              ),
+                              array(
+                                  array(
+                                      'text' => 'Знак зодиака: ✖️',
+                                      'callback_data' => '/zodiacsign',
+                                  ),
+                              ),
+                              array(
+                                  array(
+                                      'text' => 'Редактировать мою анкету',
+                                      'callback_data' => '/register',
+                                  ),
+                              ),
+                              array(
+                                  array(
+                                      'text' => 'Показать мою анкету',
+                                      'callback_data' => '/showprofile',
+                                  ),
+                              ),
+                              array(
+                                  array(
+                                      'text' => 'В главное меню',
+                                      'callback_data' => '/combacktostartmatches',
+                                  ),
+                              ),
+                          ),
+                      )),
+                  );
+                  break;
+                }
+                elseif ($resultStatusZodiac->num_rows != 0) {
+                  if ($statusZodiac['zodiac_sign'] == 'Овен') {
+                    $sign_emoticon = "♈️";
+                  } elseif ($statusZodiac['zodiac_sign'] == 'Телец') {
+                    $sign_emoticon = "♉️";
+                  } elseif ($statusZodiac['zodiac_sign'] == 'Близнецы') {
+                    $sign_emoticon = "♊️";
+                  } elseif ($statusZodiac['zodiac_sign'] == 'Рак') {
+                    $sign_emoticon = "♋️";
+                  } elseif ($statusZodiac['zodiac_sign'] == 'Лев') {
+                    $sign_emoticon = "♌️";
+                  } elseif ($statusZodiac['zodiac_sign'] == 'Дева') {
+                    $sign_emoticon = "♍️";
+                  } elseif ($statusZodiac['zodiac_sign'] == 'Весы') {
+                    $sign_emoticon = "♎️";
+                  } elseif ($statusZodiac['zodiac_sign'] == 'Скорпион') {
+                    $sign_emoticon = "♏️";
+                  } elseif ($statusZodiac['zodiac_sign'] == 'Стрелец') {
+                    $sign_emoticon = "♐️";
+                  } elseif ($statusZodiac['zodiac_sign'] == 'Козерог') {
+                    $sign_emoticon = "♑️";
+                  } elseif ($statusZodiac['zodiac_sign'] == 'Водолей') {
+                    $sign_emoticon = "♒️";
+                  } elseif ($statusZodiac['zodiac_sign'] == 'Рыбы') {
+                    $sign_emoticon = "♓️";
+                  }
+                  $getQuery = array(
                     "chat_id" => $chat_id,
                     "message_id" => $message_id['message_id'],
-                    "text" => 'Меню анкеты:',
+                    "text" => 'Моя анкета:',
                     'reply_markup' => json_encode(array(
                         'inline_keyboard' => array(
                             array(
@@ -446,6 +592,12 @@ function editTelegramMessage($token, $chat_id, $step, $mysqli) {
                             ),
                             array(
                                 array(
+                                    'text' => 'Знак зодиака: '.$sign_emoticon,
+                                    'callback_data' => '/zodiacsign',
+                                ),
+                            ),
+                            array(
+                                array(
                                     'text' => 'Редактировать мою анкету',
                                     'callback_data' => '/register',
                                 ),
@@ -466,6 +618,7 @@ function editTelegramMessage($token, $chat_id, $step, $mysqli) {
                     )),
                 );
                 break;
+                }
             }
 		case 3:
 			$getQuery = array(
@@ -769,7 +922,11 @@ function sendTelegramMessage($token, $chat_id, $text, $reg_step, $mysqli) {
           $sqlStatusTest = "SELECT test_step FROM users WHERE chat_id = '$chat_id'";
           $resultStatusTest = $mysqli->query($sqlStatusTest);
           $statusTest = $resultStatusTest->fetch_assoc();
+          $sqlStatusZodiac = "SELECT * FROM zodiac_users WHERE chat_id = '$chat_id'";
+          $resultStatusZodiac = $mysqli->query($sqlStatusZodiac);
+          $statusZodiac = $resultStatusZodiac->fetch_assoc();
           if ($statusTest ['test_step'] == 10) {
+            if ($resultStatusZodiac->num_rows == 0) {
               $getQuery = array(
                   "chat_id" => $chat_id,
                   "text" => $text,
@@ -783,6 +940,12 @@ function sendTelegramMessage($token, $chat_id, $text, $reg_step, $mysqli) {
                               ),
                           ),
                           array(
+                            array(
+                                'text' => 'Знак зодиака: ✖️',
+                                'callback_data' => '/zodiacsign',
+                            ),
+                        ),
+                          array(
                               array(
                                   'text' => 'Редактировать мою анкету',
                                   'callback_data' => '/register',
@@ -804,8 +967,77 @@ function sendTelegramMessage($token, $chat_id, $text, $reg_step, $mysqli) {
                   )),
               );
               break;
+            }
+            elseif ($resultStatusZodiac->num_rows != 0) {
+              if ($statusZodiac['zodiac_sign'] == 'Овен') {
+                $sign_emoticon = "♈️";
+              } elseif ($statusZodiac['zodiac_sign'] == 'Телец') {
+                $sign_emoticon = "♉️";
+              } elseif ($statusZodiac['zodiac_sign'] == 'Близнецы') {
+                $sign_emoticon = "♊️";
+              } elseif ($statusZodiac['zodiac_sign'] == 'Рак') {
+                $sign_emoticon = "♋️";
+              } elseif ($statusZodiac['zodiac_sign'] == 'Лев') {
+                $sign_emoticon = "♌️";
+              } elseif ($statusZodiac['zodiac_sign'] == 'Дева') {
+                $sign_emoticon = "♍️";
+              } elseif ($statusZodiac['zodiac_sign'] == 'Весы') {
+                $sign_emoticon = "♎️";
+              } elseif ($statusZodiac['zodiac_sign'] == 'Скорпион') {
+                $sign_emoticon = "♏️";
+              } elseif ($statusZodiac['zodiac_sign'] == 'Стрелец') {
+                $sign_emoticon = "♐️";
+              } elseif ($statusZodiac['zodiac_sign'] == 'Козерог') {
+                $sign_emoticon = "♑️";
+              } elseif ($statusZodiac['zodiac_sign'] == 'Водолей') {
+                $sign_emoticon = "♒️";
+              } elseif ($statusZodiac['zodiac_sign'] == 'Рыбы') {
+                $sign_emoticon = "♓️";
+              }
+              $getQuery = array(
+                  "chat_id" => $chat_id,
+                  "text" => $text,
+                  'disable_notification' => true,
+                  'reply_markup' => json_encode(array(
+                      'inline_keyboard' => array(
+                          array(
+                              array(
+                                  'text' => 'Soul Mate тест: ✅',
+                                  'callback_data' => '/soulmatetest',
+                              ),
+                          ),
+                          array(
+                            array(
+                                'text' => 'Знак зодиака: '.$sign_emoticon,
+                                'callback_data' => '/zodiacsign',
+                            ),
+                        ),
+                          array(
+                              array(
+                                  'text' => 'Редактировать мою анкету',
+                                  'callback_data' => '/register',
+                              ),
+                          ),
+                          array(
+                              array(
+                                  'text' => 'Показать мою анкету',
+                                  'callback_data' => '/showprofile',
+                              ),
+                          ),
+                          array(
+                              array(
+                                  'text' => 'В главное меню',
+                                  'callback_data' => '/combacktostartmatches',
+                              ),
+                          ),
+                      ),
+                  )),
+              );
+              break;
+            }
           }
           else {
+            if ($resultStatusZodiac->num_rows == 0) {
               $getQuery = array(
                   "chat_id" => $chat_id,
                   "text" => $text,
@@ -819,6 +1051,12 @@ function sendTelegramMessage($token, $chat_id, $text, $reg_step, $mysqli) {
                               ),
                           ),
                           array(
+                            array(
+                                'text' => 'Знак зодиака: ✖️',
+                                'callback_data' => '/zodiacsign',
+                            ),
+                        ),
+                          array(
                               array(
                                   'text' => 'Редактировать мою анкету',
                                   'callback_data' => '/register',
@@ -840,6 +1078,74 @@ function sendTelegramMessage($token, $chat_id, $text, $reg_step, $mysqli) {
                   )),
               );
               break;
+            }
+            elseif ($resultStatusZodiac->num_rows != 0) {
+              if ($statusZodiac['zodiac_sign'] == 'Овен') {
+                $sign_emoticon = "♈️";
+              } elseif ($statusZodiac['zodiac_sign'] == 'Телец') {
+                $sign_emoticon = "♉️";
+              } elseif ($statusZodiac['zodiac_sign'] == 'Близнецы') {
+                $sign_emoticon = "♊️";
+              } elseif ($statusZodiac['zodiac_sign'] == 'Рак') {
+                $sign_emoticon = "♋️";
+              } elseif ($statusZodiac['zodiac_sign'] == 'Лев') {
+                $sign_emoticon = "♌️";
+              } elseif ($statusZodiac['zodiac_sign'] == 'Дева') {
+                $sign_emoticon = "♍️";
+              } elseif ($statusZodiac['zodiac_sign'] == 'Весы') {
+                $sign_emoticon = "♎️";
+              } elseif ($statusZodiac['zodiac_sign'] == 'Скорпион') {
+                $sign_emoticon = "♏️";
+              } elseif ($statusZodiac['zodiac_sign'] == 'Стрелец') {
+                $sign_emoticon = "♐️";
+              } elseif ($statusZodiac['zodiac_sign'] == 'Козерог') {
+                $sign_emoticon = "♑️";
+              } elseif ($statusZodiac['zodiac_sign'] == 'Водолей') {
+                $sign_emoticon = "♒️";
+              } elseif ($statusZodiac['zodiac_sign'] == 'Рыбы') {
+                $sign_emoticon = "♓️";
+              }
+              $getQuery = array(
+                "chat_id" => $chat_id,
+                "text" => $text,
+                'disable_notification' => true,
+                'reply_markup' => json_encode(array(
+                    'inline_keyboard' => array(
+                        array(
+                            array(
+                                'text' => 'Soul Mate тест: ✖️',
+                                'callback_data' => '/soulmatetest',
+                            ),
+                        ),
+                        array(
+                          array(
+                              'text' => 'Знак зодиака: '.$sign_emoticon,
+                              'callback_data' => '/zodiacsign',
+                          ),
+                      ),
+                        array(
+                            array(
+                                'text' => 'Редактировать мою анкету',
+                                'callback_data' => '/register',
+                            ),
+                        ),
+                        array(
+                            array(
+                                'text' => 'Показать мою анкету',
+                                'callback_data' => '/showprofile',
+                            ),
+                        ),
+                        array(
+                            array(
+                                'text' => 'В главное меню',
+                                'callback_data' => '/combacktostartmatches',
+                            ),
+                        ),
+                    ),
+                )),
+            );
+            break;
+            }
           }
         case 7:
             $sqlLikeQueue = "SELECT id FROM rate WHERE (second_id = '$chat_id' and first_rate = true and second_rate IS NULL)
@@ -1067,49 +1373,102 @@ function showProfile ($token, $chat_id, $match_id, $mysqli) {
                           WHERE chat_id = '$chat_id'";
     $resultLocationChatId = $mysqli->query($sqlLocationChatId);
     $rowLocationChatId = $resultLocationChatId->fetch_assoc();
+    //Считываем знак зодиака
+    $sqlZodiacChatId = "SELECT zodiac_sign FROM zodiac_users WHERE chat_id = '$chat_id'";
+    $resultZodiacChatId = $mysqli->query($sqlZodiacChatId);
+    $rowZodiacChatId = $resultZodiacChatId->fetch_assoc();
+    $sqlZodiacMatchId = "SELECT zodiac_sign FROM zodiac_users WHERE chat_id = '$match_id'";
+    $resultZodiacMatchId = $mysqli->query($sqlZodiacMatchId);
+    $rowZodiacMatchId = $resultZodiacMatchId->fetch_assoc();
     if ($match_id == $chat_id) {
       $caption = $rowsProfile['name'] . ', ' . $rowsProfile['age'] . ', ' . $rowsProfile['city']."\n" . $rowsProfile['description'];
     }
     else {
       if (isset($rowsProfile['latitude']) == true && isset($rowsProfile['longitude']) == true &&
           isset($rowLocationChatId['latitude']) == true && isset($rowLocationChatId['longitude']) == true) {
-              $distance = haversineDistance($rowsProfile['latitude'], $rowsProfile['longitude'],$rowLocationChatId['latitude'], $rowLocationChatId['longitude']);
-              if ($distance < 1) {
-                  $distance = number_format($distance, 3);
-                  $distanceString = (string)$distance;
-                  $parts = explode(".", $distanceString); // Разбиваем строку по точке
-                  $distance = ltrim($parts[1], '0');
-          if ($rowsProfile['test_step'] == 10 && $rowLocationChatId['test_step'] == 10) {
-                      $answers1 = [$rowsProfile['test_1'], $rowsProfile['test_2'], $rowsProfile['test_3'], $rowsProfile['test_4'], $rowsProfile['test_5'],];
-                      $answers2 = [$rowLocationChatId['test_1'], $rowLocationChatId['test_2'], $rowLocationChatId['test_3'], $rowLocationChatId['test_4'], $rowLocationChatId['test_5'],];
-            $compatibility = kendallTauCompatibility ($answers1, $answers2);
-                      $caption = $rowsProfile['name'] . ', ' . $rowsProfile['age'] . ', ' . $rowsProfile['city'] . ' 📍'.$distance. " метров от вас"."\n"."SoulMate: ".$compatibility.'%'."\n" . $rowsProfile['description'];
-          }
-                  else {
-                      $caption = $rowsProfile['name'] . ', ' . $rowsProfile['age'] . ', ' . $rowsProfile['city'] . ' 📍'.$distance. " метров от вас.\n" . $rowsProfile['description'];
-                  }
-              }
-              else {
-                  if ($rowsProfile['test_step'] == 10 && $rowLocationChatId['test_step'] == 10) {
-                      $distance = number_format($distance, 1);
-                      $answers1 = [$rowsProfile['test_1'], $rowsProfile['test_2'], $rowsProfile['test_3'], $rowsProfile['test_4'], $rowsProfile['test_5'],];
-                      $answers2 = [$rowLocationChatId['test_1'], $rowLocationChatId['test_2'], $rowLocationChatId['test_3'], $rowLocationChatId['test_4'], $rowLocationChatId['test_5'],];
-            $compatibility = kendallTauCompatibility ($answers1, $answers2);
-                      $caption = $rowsProfile['name'] . ', ' . $rowsProfile['age'] . ', ' . $rowsProfile['city'] . ' 📍'.$distance. ' км от вас'."\n".'SoulMate: '.$compatibility.'%'."\n" . $rowsProfile['description'];
-          }
-                  else {
-                  $distance = number_format($distance, 1);
-                  $caption = $rowsProfile['name'] . ', ' . $rowsProfile['age'] . ', ' . $rowsProfile['city'] . ' 📍'.$distance. ' км от вас'."\n". $rowsProfile['description'];
-                  }
-              }
+        $distance = haversineDistance($rowsProfile['latitude'], $rowsProfile['longitude'],$rowLocationChatId['latitude'], $rowLocationChatId['longitude']);
+            //Если растояние меньше 1км
+            if ($distance < 1) {
+                $distance = number_format($distance, 3);
+                $distanceString = (string)$distance;
+                $parts = explode(".", $distanceString); // Разбиваем строку по точке
+                $distance = ltrim($parts[1], '0');
+                //Если есть тест у обоих и нет знака задиака у chat_id
+                if ($rowsProfile['test_step'] == 10 && $rowLocationChatId['test_step'] == 10 && isset($rowZodiacChatId['zodiac_sign']) == false) {
+                    $answers1 = [$rowsProfile['test_1'], $rowsProfile['test_2'], $rowsProfile['test_3'], $rowsProfile['test_4'], $rowsProfile['test_5'],];
+                    $answers2 = [$rowLocationChatId['test_1'], $rowLocationChatId['test_2'], $rowLocationChatId['test_3'], $rowLocationChatId['test_4'], $rowLocationChatId['test_5'],];
+                    $compatibility = kendallTauCompatibility ($answers1, $answers2);
+                    $caption = $rowsProfile['name'] . ', ' . $rowsProfile['age'] . ', ' . $rowsProfile['city'] . ' 📍'.$distance. " метров"."\n"."SoulMate: ".$compatibility.'%'."\n" . $rowsProfile['description'];
+                }
+                //Если есть тест у обоих и есть знака задиака у обоих
+                elseif ($rowsProfile['test_step'] == 10 && $rowLocationChatId['test_step'] == 10 &&  isset($rowZodiacChatId['zodiac_sign']) == true && isset($rowZodiacMatchId['zodiac_sign']) == true) {
+                    $answers1 = [$rowsProfile['test_1'], $rowsProfile['test_2'], $rowsProfile['test_3'], $rowsProfile['test_4'], $rowsProfile['test_5'],];
+                    $answers2 = [$rowLocationChatId['test_1'], $rowLocationChatId['test_2'], $rowLocationChatId['test_3'], $rowLocationChatId['test_4'], $rowLocationChatId['test_5'],];
+                    $compatibility = kendallTauCompatibility ($answers1, $answers2);
+                    //вызов функции сравнения совместимости ЗЗ
 
+                    $caption = $rowsProfile['name'] . ', ' . $rowsProfile['age'] . ', ' . $rowsProfile['city'] . ' 📍'.$distance. " метров"."\n"."SoulMate: ".$compatibility.'%'."\n".$rowZodiacMatchId['zodiac_sign']."\n".$rowsProfile['description'];
+                }
+                //Если нет теста у chat_id и есть знака задиака у обоих
+                elseif ($rowsProfile['test_step'] != 10 && isset($rowZodiacChatId['zodiac_sign']) == true && isset($rowZodiacMatchId['zodiac_sign']) == true) {
+                    //вызов функции сравнения совместимости ЗЗ
+
+                    $caption = $rowsProfile['name'] . ', ' . $rowsProfile['age'] . ', ' . $rowsProfile['city'] . ' 📍'.$distance. " метров"."\n".$rowZodiacMatchId['zodiac_sign']."\n".$rowsProfile['description'];
+                }
+                else {
+                    $caption = $rowsProfile['name'] . ', ' . $rowsProfile['age'] . ', ' . $rowsProfile['city'] . ' 📍'.$distance. " метров"."\n" . $rowsProfile['description'];
+                }
+            }
+            //Если растояние больше 1км
+            else {
+                $distance = number_format($distance, 1);
+                 //Если есть тест у обоих и нет знака задиака у chat_id
+                if ($rowsProfile['test_step'] == 10 && $rowLocationChatId['test_step'] == 10 && isset($rowZodiacChatId['zodiac_sign']) == false) {
+                    $answers1 = [$rowsProfile['test_1'], $rowsProfile['test_2'], $rowsProfile['test_3'], $rowsProfile['test_4'], $rowsProfile['test_5'],];
+                    $answers2 = [$rowLocationChatId['test_1'], $rowLocationChatId['test_2'], $rowLocationChatId['test_3'], $rowLocationChatId['test_4'], $rowLocationChatId['test_5'],];
+                    $compatibility = kendallTauCompatibility ($answers1, $answers2);
+                    $caption = $rowsProfile['name'] . ', ' . $rowsProfile['age'] . ', ' . $rowsProfile['city'] . ' 📍'.$distance. ' км'."\n".'SoulMate: '.$compatibility.'%'."\n" . $rowsProfile['description'];
+                }
+                //Если есть тест у обоих и есть знака задиака у обоих
+                elseif ($rowsProfile['test_step'] == 10 && $rowLocationChatId['test_step'] == 10 &&  isset($rowZodiacChatId['zodiac_sign']) == true && isset($rowZodiacMatchId['zodiac_sign']) == true) {
+                    $answers1 = [$rowsProfile['test_1'], $rowsProfile['test_2'], $rowsProfile['test_3'], $rowsProfile['test_4'], $rowsProfile['test_5'],];
+                    $answers2 = [$rowLocationChatId['test_1'], $rowLocationChatId['test_2'], $rowLocationChatId['test_3'], $rowLocationChatId['test_4'], $rowLocationChatId['test_5'],];
+                    $compatibility = kendallTauCompatibility ($answers1, $answers2);
+                    //вызов функции сравнения совместимости ЗЗ
+
+                    $caption = $rowsProfile['name'] . ', ' . $rowsProfile['age'] . ', ' . $rowsProfile['city'] . ' 📍'.$distance. " км"."\n"."SoulMate: ".$compatibility.'%'."\n".$rowZodiacMatchId['zodiac_sign']."\n".$rowsProfile['description'];
+                }
+                //Если нет теста у chat_id и есть знака задиака у обоих
+                elseif ($rowsProfile['test_step'] != 10 && isset($rowZodiacChatId['zodiac_sign']) == true && isset($rowZodiacMatchId['zodiac_sign']) == true) {
+                    //вызов функции сравнения совместимости ЗЗ
+
+                    $caption = $rowsProfile['name'] . ', ' . $rowsProfile['age'] . ', ' . $rowsProfile['city'] . ' 📍'.$distance. " км"."\n".$rowZodiacMatchId['zodiac_sign']."\n".$rowsProfile['description'];
+                }
+                else {
+                    $caption = $rowsProfile['name'] . ', ' . $rowsProfile['age'] . ', ' . $rowsProfile['city'] . ' 📍'.$distance. ' км'."\n". $rowsProfile['description'];
+                }
+            }
       }
       else {
-          if ($rowsProfile['test_step'] == 10 && $rowLocationChatId['test_step'] == 10) {
+          if ($rowsProfile['test_step'] == 10 && $rowLocationChatId['test_step'] == 10 && isset($rowZodiacChatId['zodiac_sign']) == false) {
               $answers1 = [$rowsProfile['test_1'], $rowsProfile['test_2'], $rowsProfile['test_3'], $rowsProfile['test_4'], $rowsProfile['test_5'],];
               $answers2 = [$rowLocationChatId['test_1'], $rowLocationChatId['test_2'], $rowLocationChatId['test_3'], $rowLocationChatId['test_4'], $rowLocationChatId['test_5'],];
               $compatibility = kendallTauCompatibility ($answers1, $answers2);
               $caption = $rowsProfile['name'] . ', ' . $rowsProfile['age'] . ', ' . $rowsProfile['city'] . "\n".'SoulMate: '.$compatibility.'%'."\n" . $rowsProfile['description'];
+          }
+          elseif ($rowsProfile['test_step'] == 10 && $rowLocationChatId['test_step'] == 10 &&  isset($rowZodiacChatId['zodiac_sign']) == true && isset($rowZodiacMatchId['zodiac_sign']) == true) {
+              $answers1 = [$rowsProfile['test_1'], $rowsProfile['test_2'], $rowsProfile['test_3'], $rowsProfile['test_4'], $rowsProfile['test_5'],];
+              $answers2 = [$rowLocationChatId['test_1'], $rowLocationChatId['test_2'], $rowLocationChatId['test_3'], $rowLocationChatId['test_4'], $rowLocationChatId['test_5'],];
+              $compatibility = kendallTauCompatibility ($answers1, $answers2);
+              //вызов функции сравнения совместимости ЗЗ
+
+              $caption = $rowsProfile['name'] . ', ' . $rowsProfile['age'] . ', ' . $rowsProfile['city'] ."\n"."SoulMate: ".$compatibility.'%'."\n".$rowZodiacMatchId['zodiac_sign'].": совместимость %\n".$rowsProfile['description'];
+          }
+          //Если нет теста у chat_id и есть знака задиака у обоих
+          elseif ($rowsProfile['test_step'] != 10 && isset($rowZodiacChatId['zodiac_sign']) == true && isset($rowZodiacMatchId['zodiac_sign']) == true) {
+            //вызов функции сравнения совместимости ЗЗ
+
+              $caption = $rowsProfile['name'] . ', ' . $rowsProfile['age'] . ', ' . $rowsProfile['city']."\n".$rowZodiacMatchId['zodiac_sign'].": совместимость %\n".$rowsProfile['description'];
           }
           else {
               $caption = $rowsProfile['name'] . ', ' . $rowsProfile['age'] . ', ' . $rowsProfile['city'] ."\n". $rowsProfile['description'];
@@ -1300,6 +1659,65 @@ function showProfile ($token, $chat_id, $match_id, $mysqli) {
     curl_close($ch);
 }
 
+//Функция проверки коректности вводимой даты рождения
+function isValidDate($date) {
+  // Проверка формата даты
+  $dateFormat = "d.m";
+  $dateArray = explode('.', $date);
+
+  // Проверка на корректное количество элементов в массиве
+  if (count($dateArray) != 2) {
+    return false; // Неверный формат даты
+  }
+
+  // Получаем значения дня и месяца
+  $day = (int)$dateArray[0];
+  $month = (int)$dateArray[1];
+
+  // Проверка допустимых значений для дня и месяца
+  if (($day < 1 || $day > 31) || ($month < 1 || $month > 12)) {
+    return false; // Некорректная дата
+  }
+
+  // Создание объекта DateTime
+  $dateObj = DateTime::createFromFormat($dateFormat, $date);
+
+  if (!$dateObj) {
+    return false; // Неверный формат даты
+  }
+
+  return true; // Дата корректна
+}
+
+//Обработка знака зодиака
+function determineZodiacSign($day, $month) {
+  if (($month == 3 && $day >= 21) || ($month == 4 && $day <= 19)) {
+      return "Овен";
+  } elseif (($month == 4 && $day >= 20) || ($month == 5 && $day <= 20)) {
+      return "Телец";
+  } elseif (($month == 5 && $day >= 21) || ($month == 6 && $day <= 20)) {
+      return "Близнецы";
+  } elseif (($month == 6 && $day >= 21) || ($month == 7 && $day <= 22)) {
+      return "Рак";
+  } elseif (($month == 7 && $day >= 23) || ($month == 8 && $day <= 22)) {
+      return "Лев";
+  } elseif (($month == 8 && $day >= 23) || ($month == 9 && $day <= 22)) {
+      return "Дева";
+  } elseif (($month == 9 && $day >= 23) || ($month == 10 && $day <= 22)) {
+      return "Весы";
+  } elseif (($month == 10 && $day >= 23) || ($month == 11 && $day <= 21)) {
+      return "Скорпион";
+  } elseif (($month == 11 && $day >= 22) || ($month == 12 && $day <= 21)) {
+      return "Стрелец";
+  } elseif (($month == 12 && $day >= 22) || ($month == 1 && $day <= 19)) {
+      return "Козерог";
+  } elseif (($month == 1 && $day >= 20) || ($month == 2 && $day <= 18)) {
+      return "Водолей";
+  } else {
+      return "Рыбы";
+  }
+}
+
 //Далее идут функции запоминания этапа регистрации
 function registerStep_1 ($token, $chat_id, $mysqli) {
     sendTelegramMessage($token, $chat_id, 'Введите свой возраст', 0, $mysqli);
@@ -1426,7 +1844,7 @@ function testFinish ($token, $chat_id, $mysqli) {
     $test_step = 10;
     $sql = ("UPDATE users SET test_step = '$test_step', test_flag = false, my_profile_menu_flag = true WHERE chat_id = '$chat_id'");
     $mysqli->query($sql);
-	sendTelegramMessage($token, $chat_id, 'Меню анкеты:', 6, $mysqli);
+	sendTelegramMessage($token, $chat_id, 'Моя анкета:', 6, $mysqli);
     return;
 }
 
@@ -1895,10 +2313,9 @@ function registerCheck ($token, $chat_id, $username, $text, $location, $file_id,
     }
 }
 
-
 // Функция обработки команд от пользователя
 function processSwitchCommand($token, $chat_id, $username, $text, $mysqli) {
-    $sqlShowFlag = "SELECT main_menu_flag, show_flag, coming_flag, filter_flag, filter_age_flag, filter_gender_flag, my_profile_menu_flag, match_menu_flag FROM users WHERE chat_id = '$chat_id'";
+    $sqlShowFlag = "SELECT * FROM users WHERE chat_id = '$chat_id'";
     $resultSqlShowFlag = $mysqli->query($sqlShowFlag);
     $showFlag = $resultSqlShowFlag->fetch_assoc();
     //Главное меню
@@ -1936,8 +2353,9 @@ function processSwitchCommand($token, $chat_id, $username, $text, $mysqli) {
             $resultCheck = $mysqli->query($sqlCheckReg);
             if ($resultCheck->num_rows == 0) {
                 $sqlNewReg = "INSERT INTO users (chat_id, username, show_flag, coming_flag, filter_flag, filter_location,
-                                                 favorite_age_min, favorite_age_max, filter_age_flag, filter_gender_flag, main_menu_flag, match_menu_flag, my_profile_menu_flag)
-                                        VALUES ('$chat_id', '$username', 'false', 'false', 'false', 'local', '18', '25', 'false', 'false', 'false', 'false', 'false')";
+                                                 favorite_age_min, favorite_age_max, filter_age_flag, filter_gender_flag, main_menu_flag, match_menu_flag, my_profile_menu_flag, zodiac_flag)
+                                        VALUES ('$chat_id', '$username', 'false', 'false', 'false', 'local', '18', '25', 'false', 'false', 'false',
+                                                'false', 'false', 'false')";
                 $mysqli->query($sqlNewReg);
             }
             $sqlFilter = ("UPDATE users SET main_menu_flag = false WHERE chat_id = '$chat_id'");
@@ -1987,11 +2405,26 @@ function processSwitchCommand($token, $chat_id, $username, $text, $mysqli) {
     elseif ($showFlag['my_profile_menu_flag'] == true) {
         if ($text == '/showprofile' || $text == 'Показать мою анкету') {
             deleteMenu($chat_id, $token, $mysqli);
-            // $sqlCheckReg = "SELECT * FROM users WHERE chat_id = '$chat_id'";
-            // $resultCheck = $mysqli->query($sqlCheckReg);
-			showProfile ($token, $chat_id, $chat_id, $mysqli);
-			sendTelegramMessage ($token, $chat_id, 'Меню анкеты:', 6, $mysqli);
-			return;
+            showProfile ($token, $chat_id, $chat_id, $mysqli);
+            sendTelegramMessage ($token, $chat_id, 'Моя анкета:', 6, $mysqli);
+            return;
+        }
+        elseif ($text == '/zodiacsign' || $text == 'Знак зодиака') {
+            $sqlFilter = ("UPDATE users SET zodiac_flag = true WHERE chat_id = '$chat_id'");
+            $mysqli->query($sqlFilter);
+            deleteMenu($chat_id, $token, $mysqli);
+            $sqlCheck = ("SELECT * FROM zodiac_users WHERE chat_id = '$chat_id'");
+            $resultSqlCheck = $mysqli->query($sqlCheck);
+            if ($resultSqlCheck->num_rows != 0) {
+              sendTelegramMessage ($token, $chat_id, "Введите свою дату рождения в формате дд.мм", 0, $mysqli);
+              return;
+            }
+            else {
+              $sqlCheck = ("INSERT INTO zodiac_users (chat_id) VALUES ('$chat_id')");
+              $mysqli->query($sqlCheck);
+              sendTelegramMessage ($token, $chat_id, "Введите свою дату рождения в формате дд.мм", 0, $mysqli);
+              return;
+            }
         }
         elseif ($text == '/soulmatetest' || $text == 'Soul Mate тест') {
             $sqlFilter = ("UPDATE users SET test_flag = true WHERE chat_id = '$chat_id'");
@@ -2042,6 +2475,22 @@ function processSwitchCommand($token, $chat_id, $username, $text, $mysqli) {
             $mysqli->query($sqlFlag);
             editTelegramMessage($token, $chat_id, 3, $mysqli);
             return;
+        }
+        elseif ($showFlag ['zodiac_flag'] == true) {
+          if (isValidDate($text)) {
+            list($day, $month) = explode(".", $text);
+            $sign = determineZodiacSign ($day, $month);
+            $sqlZodiac = ("UPDATE zodiac_users SET zodiac_sign = '$sign', date_of_birth = '$text' WHERE chat_id = '$chat_id'");
+            $mysqli->query($sqlZodiac);
+            $sqlFilter = ("UPDATE users SET zodiac_flag = false WHERE chat_id = '$chat_id'");
+            $mysqli->query($sqlFilter);
+            sendTelegramMessage ($token, $chat_id, 'Моя анкета:', 6, $mysqli);
+            return;
+          }
+          else{
+            sendTelegramMessage ($token, $chat_id, "Введите свою дату рождения в формате дд.мм", 0, $mysqli);
+            return;
+          }
         }
         else {
             sendTelegramMessage ($token, $chat_id, 'Неверная команда', 0, $mysqli);
