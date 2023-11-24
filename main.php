@@ -12,7 +12,7 @@ $password = 'A951753d!81902018B';
 $database = 'ghulqul_face_app';
 
 $data = json_decode(file_get_contents('php://input'), TRUE);
-// file_put_contents('file.txt', '$data: '.print_r($data, 1)."\n", FILE_APPEND);
+//file_put_contents('file.txt', '$data: '.print_r($data, 1)."\n", FILE_APPEND);
 $mysqli = new mysqli($host, $user, $password, $database);
 $mysqli->set_charset('utf8mb4');
 
@@ -67,9 +67,9 @@ function showMatches ($token, $chat_id, $mysqli) {
 			$match_id = $rowLiker['first_id'];
 		}
         $sqlMatchUsername = "SELECT username FROM users WHERE chat_id = '$match_id'";
-	    $resultMatchUsername = $mysqli->query($sqlMatchUsername);
+	      $resultMatchUsername = $mysqli->query($sqlMatchUsername);
         $row = $resultMatchUsername->fetch_assoc();
-		showProfile ($token, $chat_id, $match_id, $mysqli);
+		    showProfile ($token, $chat_id, $match_id, $mysqli);
         sendTelegramMessage ($token, $chat_id, 'Начинай общение ➤ @'.$row['username'], 0, $mysqli);
 		$i += 1;
 	}
@@ -89,7 +89,7 @@ function comingLikes ($token, $chat_id, $mysqli) {
     if ($resultLikeQueue->num_rows == 0) {
         $sqlShowFlag = "UPDATE users SET coming_flag = FALSE, match_menu_flag = true WHERE chat_id = '$chat_id'";
         $mysqli->query($sqlShowFlag);
-        sendTelegramMessage($token, $chat_id, "Вы никому не нужны!", 8, $mysqli);
+        sendTelegramMessage($token, $chat_id, "Ваша анкета ещё никому не понравилась :(", 8, $mysqli);
         deleteMenu ($token, $chat_id, $mysqli);
         sendTelegramMessage($token, $chat_id, "Ваши лайки:", 7, $mysqli);
         return;
@@ -213,13 +213,56 @@ function showAlgorithm ($token, $chat_id, $mysqli) {
         sendTelegramMessage($token, $chat_id, 'Главное меню:', 1, $mysqli);
         return;
     }
-    $rows = $result->fetch_assoc();
+    //-------------------------------------------Закомментил пока тест -------------------------------------------
+    // Распределение по рейтингу
+    $averageRating = сalculationAverageRating ($mysqli);
+    // Случайным образом выбераем строку из массива результатов
+    $selectedRows = [];
+    $randomKey = array_rand($result);
+    $rows = $result[$randomKey];
     $match_id = $rows['chat_id'];
+    $selectedRows[] = $match_id;
+    // Получаем данные о рейтинге для выбранной пары
+    $sqlRating = "SELECT * FROM rating_users WHERE chat_id = '$match_id'";
+    $resultSqlRating = $mysqli->query($sqlRating);
+    $rowRating = $resultSqlRating->fetch_assoc();
+    $rating = $rowRating ['rating'];
+    // Получаем какой статус партнёра нужен для текущего показа
+    $sqlStatus = "SELECT status_show FROM rating_users WHERE chat_id = '$chat_id'";
+    $resultSqlStatus = $mysqli->query($sqlStatus);
+    $rowStatus = $resultSqlStatus->fetch_assoc();
+    $status = $rowStatus ['status_show'];
+    // Обновляем счётчик показа анкет с разными статусами
+    if ($status < 2) {
+      $sqlUpdStatus = "UPDATE rating_users SET status_show = status_show + 1 WHERE chat_id = '$chat_id'";
+      $mysqli->query($sqlUpdStatus);
+      $status = true;
+    }
+    else {
+      $sqlUpdStatus = "UPDATE rating_users SET status_show = 0 WHERE chat_id = '$chat_id'";
+      $mysqli->query($sqlUpdStatus);
+      $status = false;
+    }
+    $match_id_status = definitionQuality ($rating, $averageRating);
+    while ($match_id_status != $status) {
+      do {
+        $randomKey = array_rand($result);
+        $rows = $result[$randomKey];
+        $match_id = $rows['chat_id'];
+      } while (in_array($match_id, $selectedRows));
+      $selectedRows[] = $match_id;
+      $sqlRating = "SELECT * FROM rating_users WHERE chat_id = '$match_id'";
+      $resultSqlRating = $mysqli->query($sqlRating);
+      $rowRating = $resultSqlRating->fetch_assoc();
+      $rating = $rowRating ['rating'];
+      $match_id_status = definitionQuality ($rating, $averageRating);
+    }
     //Вызов функции показа анкеты
     $sqlUpdShownId = "UPDATE users SET last_shown_id = '$match_id' WHERE chat_id = '$chat_id'";
     $mysqli->query($sqlUpdShownId);
     showProfile($token, $chat_id, $match_id, $mysqli);
     sendTelegramMessage ($token, $chat_id, 'Оцените анкету', 10, $mysqli);
+    ratingChange ($chat_id, $mysqli, 1);
     //Создание новой строчки с показаной анкетой
     $sqlRate = "SELECT id FROM rate WHERE (first_id = '$match_id' AND second_id = '$chat_id') OR (first_id = '$chat_id' AND second_id = '$match_id')";
     $resultRate = $mysqli->query($sqlRate);
@@ -239,7 +282,7 @@ function deleteMenu($chat_id, $token, $mysqli) {
             WHERE chat_id = '$chat_id' AND (text = '/showprofile' OR text = '/startmatch' OR text = '/register'
                                             OR text = '/start' OR text = '/checklike' OR text = '/matches' OR text = '/age'
                                             OR text = '/combacktostartmatches' OR text = '/combacktostartmenu' OR text = '/favorite_gender'
-                                            OR text = '/soulmatetest' OR text = '/zodiacsign')
+                                            OR text = '/soulmatetest' OR text = '/zodiacsign' OR text = '/verification')
                                             ORDER BY id DESC LIMIT 1";
     $result = $mysqli->query($sql);
     $row = $result->fetch_assoc();
@@ -408,6 +451,12 @@ function editTelegramMessage($token, $chat_id, $step, $mysqli) {
                           'inline_keyboard' => array(
                               array(
                                   array(
+                                      'text' => 'Верификация',
+                                      'callback_data' => '/verification',
+                                  ),
+                              ),
+                              array(
+                                  array(
                                       'text' => 'Soul Mate тест: ✅',
                                       'callback_data' => '/soulmatetest',
                                   ),
@@ -475,6 +524,12 @@ function editTelegramMessage($token, $chat_id, $step, $mysqli) {
                           'inline_keyboard' => array(
                               array(
                                   array(
+                                      'text' => 'Верификация',
+                                      'callback_data' => '/verification',
+                                  ),
+                              ),
+                              array(
+                                  array(
                                       'text' => 'Soul Mate тест: ✅',
                                       'callback_data' => '/soulmatetest',
                                   ),
@@ -517,6 +572,12 @@ function editTelegramMessage($token, $chat_id, $step, $mysqli) {
                       "text" => 'Моя анкета:',
                       'reply_markup' => json_encode(array(
                           'inline_keyboard' => array(
+                              array(
+                                  array(
+                                      'text' => 'Верификация',
+                                      'callback_data' => '/verification',
+                                  ),
+                              ),
                               array(
                                   array(
                                       'text' => 'Soul Mate тест: ✖️',
@@ -584,6 +645,12 @@ function editTelegramMessage($token, $chat_id, $step, $mysqli) {
                     "text" => 'Моя анкета:',
                     'reply_markup' => json_encode(array(
                         'inline_keyboard' => array(
+                            array(
+                                array(
+                                    'text' => 'Верификация',
+                                    'callback_data' => '/verification',
+                                ),
+                            ),
                             array(
                                 array(
                                     'text' => 'Soul Mate тест: ✖️',
@@ -824,10 +891,10 @@ function sendTelegramMessage($token, $chat_id, $text, $reg_step, $mysqli) {
                     'keyboard' => array(
                         array(
                             array(
-                            'text' => 'Мужской',
+                            'text' => 'Парень',
                             ),
                             array(
-                            'text' => 'Женский',
+                            'text' => 'Девушка',
                             ),
                         )),
                         'resize_keyboard' => TRUE,
@@ -935,6 +1002,12 @@ function sendTelegramMessage($token, $chat_id, $text, $reg_step, $mysqli) {
                       'inline_keyboard' => array(
                           array(
                               array(
+                                  'text' => 'Верификация',
+                                  'callback_data' => '/verification',
+                              ),
+                          ),
+                          array(
+                              array(
                                   'text' => 'Soul Mate тест: ✅',
                                   'callback_data' => '/soulmatetest',
                               ),
@@ -1002,6 +1075,12 @@ function sendTelegramMessage($token, $chat_id, $text, $reg_step, $mysqli) {
                       'inline_keyboard' => array(
                           array(
                               array(
+                                  'text' => 'Верификация',
+                                  'callback_data' => '/verification',
+                              ),
+                          ),
+                          array(
+                              array(
                                   'text' => 'Soul Mate тест: ✅',
                                   'callback_data' => '/soulmatetest',
                               ),
@@ -1044,6 +1123,12 @@ function sendTelegramMessage($token, $chat_id, $text, $reg_step, $mysqli) {
                   'disable_notification' => true,
                   'reply_markup' => json_encode(array(
                       'inline_keyboard' => array(
+                          array(
+                              array(
+                                  'text' => 'Верификация',
+                                  'callback_data' => '/verification',
+                              ),
+                          ),
                           array(
                               array(
                                   'text' => 'Soul Mate тест: ✖️',
@@ -1111,6 +1196,12 @@ function sendTelegramMessage($token, $chat_id, $text, $reg_step, $mysqli) {
                 'disable_notification' => true,
                 'reply_markup' => json_encode(array(
                     'inline_keyboard' => array(
+                        array(
+                            array(
+                                'text' => 'Верификация',
+                                'callback_data' => '/verification',
+                            ),
+                        ),
                         array(
                             array(
                                 'text' => 'Soul Mate тест: ✖️',
@@ -1462,13 +1553,13 @@ function showProfile ($token, $chat_id, $match_id, $mysqli) {
               $compatibility = kendallTauCompatibility ($answers1, $answers2);
               //вызов функции сравнения совместимости ЗЗ
 
-              $caption = $rowsProfile['name'] . ', ' . $rowsProfile['age'] . ', ' . $rowsProfile['city'] ."\n"."SoulMate: ".$compatibility.'%'."\n".$rowZodiacMatchId['zodiac_sign'].": совместимость %\n".$rowsProfile['description'];
+              $caption = $rowsProfile['name'] . ', ' . $rowsProfile['age'] . ', ' . $rowsProfile['city'] ."\n"."SoulMate: ".$compatibility.'%'."\n".$rowZodiacMatchId['zodiac_sign']."\n".$rowsProfile['description'];
           }
           //Если нет теста у chat_id и есть знака задиака у обоих
           elseif ($rowsProfile['test_step'] != 10 && isset($rowZodiacChatId['zodiac_sign']) == true && isset($rowZodiacMatchId['zodiac_sign']) == true) {
             //вызов функции сравнения совместимости ЗЗ
 
-              $caption = $rowsProfile['name'] . ', ' . $rowsProfile['age'] . ', ' . $rowsProfile['city']."\n".$rowZodiacMatchId['zodiac_sign'].": совместимость %\n".$rowsProfile['description'];
+              $caption = $rowsProfile['name'] . ', ' . $rowsProfile['age'] . ', ' . $rowsProfile['city']."\n".$rowZodiacMatchId['zodiac_sign']."\n".$rowsProfile['description'];
           }
           else {
               $caption = $rowsProfile['name'] . ', ' . $rowsProfile['age'] . ', ' . $rowsProfile['city'] ."\n". $rowsProfile['description'];
@@ -1752,7 +1843,7 @@ function registerStep_4 ($token, $chat_id, $mysqli) {
 }
 
 function registerStep_5 ($token, $chat_id, $mysqli) {
-    sendTelegramMessage($token, $chat_id, 'Откуда ты?', 5, $mysqli);
+    sendTelegramMessage($token, $chat_id, 'Напишите свой город или отправьте геопозицию', 5, $mysqli);
     $reg_step = 5;
     $sql = ("UPDATE users SET reg_step = '$reg_step' WHERE chat_id = '$chat_id'");
     $mysqli->query($sql);
@@ -1844,6 +1935,7 @@ function testFinish ($token, $chat_id, $mysqli) {
     $test_step = 10;
     $sql = ("UPDATE users SET test_step = '$test_step', test_flag = false, my_profile_menu_flag = true WHERE chat_id = '$chat_id'");
     $mysqli->query($sql);
+    ratingChange ($chat_id, $mysqli, 4);
 	sendTelegramMessage($token, $chat_id, 'Моя анкета:', 6, $mysqli);
     return;
 }
@@ -2016,7 +2108,13 @@ function responseProcessingName ($token, $chat_id, $text, $mysqli) {
 }
 
 function responseProcessingGender ($token, $chat_id, $text, $mysqli) {
-    if ($text == 'Мужской' || $text == 'Женский') {
+    if ($text == 'Парень' || $text == 'Девушка') {
+        if ($text == 'Парень') {
+            $text = 'Мужской';
+        }
+        else {
+            $text = 'Женский';
+        }
         $sqlReg = ("UPDATE users SET gender = '$text' WHERE chat_id = '$chat_id'");
         $mysqli->query($sqlReg);
         registerStep_4 ($token, $chat_id, $mysqli);
@@ -2299,53 +2397,63 @@ function registerCheck ($token, $chat_id, $username, $text, $location, $file_id,
                         responseProcessingTest_5 ($token, $chat_id, $text, $mysqli);
                         return;
                     case '10':
-                        processSwitchCommand($token, $chat_id, $username, $text, $mysqli);
+                        processSwitchCommand($token, $chat_id, $username, $text, $file_id, $mysqli);
                         return;
                     default:
-                        processSwitchCommand($token, $chat_id, $username, $text, $mysqli);
+                        processSwitchCommand($token, $chat_id, $username, $text, $file_id, $mysqli);
                         return;
                 }
         }
     }
     else {
-        processSwitchCommand($token, $chat_id, $username, $text, $mysqli);
+        processSwitchCommand($token, $chat_id, $username, $text, $file_id, $mysqli);
         return;
     }
 }
 
 // Функция обработки команд от пользователя
-function processSwitchCommand($token, $chat_id, $username, $text, $mysqli) {
+function processSwitchCommand($token, $chat_id, $username, $text, $file_id, $mysqli) {
     $sqlShowFlag = "SELECT * FROM users WHERE chat_id = '$chat_id'";
     $resultSqlShowFlag = $mysqli->query($sqlShowFlag);
     $showFlag = $resultSqlShowFlag->fetch_assoc();
     //Главное меню
     if ($showFlag ['main_menu_flag'] == true || isset($showFlag ['main_menu_flag']) == false) {
-        if ($text == '/start') {
-			      deleteMenu($chat_id, $token, $mysqli);
-            $sqlFilter = ("UPDATE users SET main_menu_flag = true WHERE chat_id = '$chat_id'");
-            $mysqli->query($sqlFilter);
+        //Для первого запуска бота
+        if ($text == '/begin' && isset($showFlag ['main_menu_flag']) == false) {
+            deleteMenu($chat_id, $token, $mysqli);
             sendTelegramMessage($token, $chat_id, 'Главное меню:', 1, $mysqli);
             return;
         }
-        elseif ($text == '/filter' || $text == 'Фильтр') {
+        //Запуск главного меню
+        elseif ($text == '/start' && isset($showFlag ['main_menu_flag']) == true) {
+            deleteMenu($chat_id, $token, $mysqli);
+            sendTelegramMessage($token, $chat_id, 'Главное меню:', 1, $mysqli);
+            $sqlFilter = ("UPDATE users SET main_menu_flag = true WHERE chat_id = '$chat_id'");
+            $mysqli->query($sqlFilter);
+            return;
+        }
+        elseif (($text == '/filter' || $text == 'Фильтр') && isset($showFlag ['main_menu_flag']) == true) {
             $sqlFilter = ("UPDATE users SET filter_flag = true, main_menu_flag = false WHERE chat_id = '$chat_id'");
             $mysqli->query($sqlFilter);
             editTelegramMessage($token, $chat_id, 0, $mysqli);
             return;
         }
-        elseif ($text == '/matchmenu' || $text == 'Пары') {
+        elseif (($text == '/matchmenu' || $text == 'Пары') && isset($showFlag ['main_menu_flag']) == true) {
             $sqlFilter = ("UPDATE users SET match_menu_flag = true, main_menu_flag = false WHERE chat_id = '$chat_id'");
             $mysqli->query($sqlFilter);
             editTelegramMessage($token, $chat_id, 1, $mysqli);
             return;
         }
-        elseif ($text == '/myprofilemenu' || $text == 'Моя анкета') {
+        elseif (($text == '/myprofilemenu' || $text == 'Моя анкета') && isset($showFlag ['main_menu_flag']) == true) {
             $sqlFilter = ("UPDATE users SET my_profile_menu_flag = true, main_menu_flag = false WHERE chat_id = '$chat_id'");
             $mysqli->query($sqlFilter);
             editTelegramMessage($token, $chat_id, 2, $mysqli);
             return;
         }
-        elseif ($text == '/register' || $text == 'Зарегестрироваться' || $text == 'Редактировать мою анкету') {
+        elseif (($text == '/register' || $text == 'Зарегестрироваться' || $text == 'Редактировать мою анкету') && isset($showFlag ['main_menu_flag']) == false) {
+            $sqlRating = "INSERT INTO rating_users (chat_id, rating, count_dislike, verification_bonus, zodiac_bonus) VALUES ('$chat_id', '500', '0',
+            'false', 'false')";
+            $mysqli->query($sqlRating);
             $sqlFilter = ("UPDATE users SET main_menu_flag = false WHERE chat_id = '$chat_id'");
             $mysqli->query($sqlFilter);
             deleteMenu($chat_id, $token, $mysqli);
@@ -2363,7 +2471,7 @@ function processSwitchCommand($token, $chat_id, $username, $text, $mysqli) {
             registerStep_1($token, $chat_id, $mysqli);
             return;
         }
-        elseif ($text == '/startmatch' || $text == 'Поиск') {
+        elseif (($text == '/startmatch' || $text == 'Поиск') && isset($showFlag ['main_menu_flag']) == true) {
             $sqlFilter = ("UPDATE users SET main_menu_flag = false WHERE chat_id = '$chat_id'");
             $mysqli->query($sqlFilter);
             deleteMenu($chat_id, $token, $mysqli);
@@ -2409,6 +2517,173 @@ function processSwitchCommand($token, $chat_id, $username, $text, $mysqli) {
             sendTelegramMessage ($token, $chat_id, 'Моя анкета:', 6, $mysqli);
             return;
         }
+        elseif ($text == '/verification' || $text == 'Верификация') {
+          $sqlFilter = ("UPDATE users SET verification_flag = true WHERE chat_id = '$chat_id'");
+          $mysqli->query($sqlFilter);
+          deleteMenu($chat_id, $token, $mysqli);
+          $sqlCheck = ("SELECT * FROM verification_users WHERE chat_id = '$chat_id'");
+          $resultSqlCheck = $mysqli->query($sqlCheck);
+          $resultAssoc = $resultSqlCheck->fetch_assoc();
+          $result = $resultAssoc ['result'];
+          $countFingers = rand(1, 5);
+          if ($resultSqlCheck->num_rows != 0 && $result == 1) { // Профиль уже подтверждён
+            sendTelegramMessage ($token, $chat_id, 'Ваш профиль уже подтверждён', 0, $mysqli);
+            $sqlFilter = ("UPDATE users SET verification_flag = false WHERE chat_id = '$chat_id'");
+            $mysqli->query($sqlFilter);
+            deleteMenu($chat_id, $token, $mysqli);
+            sendTelegramMessage ($token, $chat_id, 'Моя анкета:', 6, $mysqli);
+            return;
+          }
+          elseif ($resultSqlCheck->num_rows != 0 && $result == 0) { // Профиль ожидает проверки
+            deleteMenu($chat_id, $token, $mysqli);
+            sendTelegramMessage ($token, $chat_id, 'Ваше фото уже отправлено на проверку', 0, $mysqli);
+            $sqlFilter = ("UPDATE users SET verification_flag = false WHERE chat_id = '$chat_id'");
+            $mysqli->query($sqlFilter);
+            sendTelegramMessage ($token, $chat_id, 'Моя анкета:', 6, $mysqli);
+            return;
+          }
+          elseif ($resultSqlCheck->num_rows != 0 && $result == 2) { // Профиль не прошёл проверку
+            deleteMenu($chat_id, $token, $mysqli);
+            sendTelegramMessage ($token, $chat_id, 'Ваше отправленное фото не прошло проверку, попробуйте ещё раз', 0, $mysqli);
+            $caption = 'Отправьте фото с данным жестом';
+            switch ($countFingers) {
+              case 1:
+                $photo_1 = 'AgACAgIAAxkBAAJBa2Vc6vhq6jTpFpBbLh_6_1X78hj-AAJk0jEbgLnpSgu_6kByKL4KAQADAgADeAADMwQ';
+                $arrayQuery = [
+                  'chat_id' => $chat_id,
+                  'disable_notification' => true,
+                  'reply_markup' => null,
+                  'media' => json_encode([
+                  ['type' => 'photo', 'media' => $photo_1, 'caption' => $caption ],
+                  ])
+                ];
+                break;
+              case 2:
+                $photo_2 = 'AgACAgIAAxkBAAJBbGVc61jCdDkyx3SP1mHsLnrwCbl0AAI72DEbXn3pSsiopBXnvtcKAQADAgADeQADMwQ';
+                $arrayQuery = [
+                  'chat_id' => $chat_id,
+                  'disable_notification' => true,
+                  'reply_markup' => null,
+                  'media' => json_encode([
+                  ['type' => 'photo', 'media' => $photo_2, 'caption' => $caption ],
+                  ])
+                ];
+                break;
+              case 3:
+                $photo_3 = 'AgACAgIAAxkBAAJBbWVc64FQ_dJgh0AqJ9u7npezcIcMAAI82DEbXn3pSjyAyhTqnQtZAQADAgADeAADMwQ';
+                $arrayQuery = [
+                  'chat_id' => $chat_id,
+                  'disable_notification' => true,
+                  'reply_markup' => null,
+                  'media' => json_encode([
+                  ['type' => 'photo', 'media' => $photo_3, 'caption' => $caption ],
+                  ])
+                ];
+                break;
+              case 4:
+                $photo_4 = 'AgACAgIAAxkBAAJBRWVc59TPZbCtGLhz-I7fRqsHLJEVAAI-2DEbXn3pSuPd5q5vBB7CAQADAgADeAADMwQ';
+                $arrayQuery = [
+                  'chat_id' => $chat_id,
+                  'disable_notification' => true,
+                  'reply_markup' => null,
+                  'media' => json_encode([
+                  ['type' => 'photo', 'media' => $photo_4, 'caption' => $caption ],
+                  ])
+                ];
+                break;
+              case 5:
+                $photo_5 = 'AgACAgIAAxkBAAJBWGVc6A4vMDrP7gitDf6cJAne_ddPAAI_2DEbXn3pSt9q4EoqhSsZAQADAgADeQADMwQ';
+                $arrayQuery = [
+                  'chat_id' => $chat_id,
+                  'disable_notification' => true,
+                  'reply_markup' => null,
+                  'media' => json_encode([
+                  ['type' => 'photo', 'media' => $photo_5, 'caption' => $caption ],
+                  ])
+                ];
+                break;
+            }
+            $ch = curl_init('https://api.telegram.org/bot'. $token .'/sendMediaGroup');
+            curl_setopt($ch, CURLOPT_POST, 1);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $arrayQuery);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+            curl_setopt($ch, CURLOPT_HEADER, false);
+            curl_exec($ch);
+            curl_close($ch);
+            return;
+          }
+          else { //Первая верификация
+            $sqlCheck = ("INSERT INTO verification_users (chat_id, count_fingers) VALUES ('$chat_id', '$countFingers')");
+            $mysqli->query($sqlCheck);
+            $caption = 'Отправьте фото с данным жестом';
+            switch ($countFingers) {
+              case 1:
+                $photo_1 = 'AgACAgIAAxkBAAJBa2Vc6vhq6jTpFpBbLh_6_1X78hj-AAJk0jEbgLnpSgu_6kByKL4KAQADAgADeAADMwQ';
+                $arrayQuery = [
+                  'chat_id' => $chat_id,
+                  'disable_notification' => true,
+                  'reply_markup' => null,
+                  'media' => json_encode([
+                  ['type' => 'photo', 'media' => $photo_1, 'caption' => $caption ],
+                  ])
+                ];
+                break;
+              case 2:
+                $photo_2 = 'AgACAgIAAxkBAAJBbGVc61jCdDkyx3SP1mHsLnrwCbl0AAI72DEbXn3pSsiopBXnvtcKAQADAgADeQADMwQ';
+                $arrayQuery = [
+                  'chat_id' => $chat_id,
+                  'disable_notification' => true,
+                  'reply_markup' => null,
+                  'media' => json_encode([
+                  ['type' => 'photo', 'media' => $photo_2, 'caption' => $caption ],
+                  ])
+                ];
+                break;
+              case 3:
+                $photo_3 = 'AgACAgIAAxkBAAJBbWVc64FQ_dJgh0AqJ9u7npezcIcMAAI82DEbXn3pSjyAyhTqnQtZAQADAgADeAADMwQ';
+                $arrayQuery = [
+                  'chat_id' => $chat_id,
+                  'disable_notification' => true,
+                  'reply_markup' => null,
+                  'media' => json_encode([
+                  ['type' => 'photo', 'media' => $photo_3, 'caption' => $caption ],
+                  ])
+                ];
+                break;
+              case 4:
+                $photo_4 = 'AgACAgIAAxkBAAJBRWVc59TPZbCtGLhz-I7fRqsHLJEVAAI-2DEbXn3pSuPd5q5vBB7CAQADAgADeAADMwQ';
+                $arrayQuery = [
+                  'chat_id' => $chat_id,
+                  'disable_notification' => true,
+                  'reply_markup' => null,
+                  'media' => json_encode([
+                  ['type' => 'photo', 'media' => $photo_4, 'caption' => $caption ],
+                  ])
+                ];
+                break;
+              case 5:
+                $photo_5 = 'AgACAgIAAxkBAAJBWGVc6A4vMDrP7gitDf6cJAne_ddPAAI_2DEbXn3pSt9q4EoqhSsZAQADAgADeQADMwQ';
+                $arrayQuery = [
+                  'chat_id' => $chat_id,
+                  'disable_notification' => true,
+                  'reply_markup' => null,
+                  'media' => json_encode([
+                  ['type' => 'photo', 'media' => $photo_5, 'caption' => $caption ],
+                  ])
+                ];
+                break;
+            }
+            $ch = curl_init('https://api.telegram.org/bot'. $token .'/sendMediaGroup');
+            curl_setopt($ch, CURLOPT_POST, 1);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $arrayQuery);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+            curl_setopt($ch, CURLOPT_HEADER, false);
+            curl_exec($ch);
+            curl_close($ch);
+          }
+        }
         elseif ($text == '/zodiacsign' || $text == 'Знак зодиака') {
             $sqlFilter = ("UPDATE users SET zodiac_flag = true WHERE chat_id = '$chat_id'");
             $mysqli->query($sqlFilter);
@@ -2440,10 +2715,10 @@ function processSwitchCommand($token, $chat_id, $username, $text, $mysqli) {
             if ($resultCheck->num_rows == 0) {
                 $sqlNewReg =
                 "INSERT INTO users
-                (chat_id, username, description, show_flag, coming_flag, filter_flag, filter_location, favorite_age_min, favorite_age_max, filter_age_flag, filter_gender_flag, test_flag, match_menu_flag, my_profile_menu_flag, main_menu_flag, video_1, video_2, video_3)
+                (latitude, longitude, chat_id, username, description, show_flag, coming_flag, filter_flag, filter_location, favorite_age_min, favorite_age_max, filter_age_flag, filter_gender_flag, test_flag, match_menu_flag, my_profile_menu_flag, main_menu_flag, video_1, video_2, video_3,  zodiac_flag, verification_flag)
                 VALUES
-                ('$chat_id', '$username', NULL, 'false', 'false', 'false', 'local',
-                '18', '25', 'false', 'false', 'false', 'false', 'false', 'false', 'false', 'false', 'false')";
+                (NULL, NULL, '$chat_id', '$username', NULL, 'false', 'false', 'false', 'local', '18', '25', 'false', 'false', 'false', 'false', 'false', 'false',
+                'false', 'false', 'false', 'false', 'false')";
                 $mysqli->query($sqlNewReg);
             }
             else {
@@ -2458,12 +2733,16 @@ function processSwitchCommand($token, $chat_id, $username, $text, $mysqli) {
                                               filter_age_flag = 'false',
                                               filter_gender_flag = 'false',
                                               test_flag = 'false',
+                                              latitude = NULL,
+                                              longitude = NULL,
                                               match_menu_flag = 'false',
                                               my_profile_menu_flag = 'false',
                                               main_menu_flag = 'false',
                                               video_1 = 'false',
                                               video_2 = 'false',
-                                              video_3 = 'false'
+                                              video_3 = 'false',
+                                              zodiac_flag = 'false',
+                                              verification_flag = 'false'
                               WHERE chat_id = '$chat_id'";
               $mysqli->query($sqlNewReg);
             }
@@ -2484,6 +2763,7 @@ function processSwitchCommand($token, $chat_id, $username, $text, $mysqli) {
             $mysqli->query($sqlZodiac);
             $sqlFilter = ("UPDATE users SET zodiac_flag = false WHERE chat_id = '$chat_id'");
             $mysqli->query($sqlFilter);
+            ratingChange ($chat_id, $mysqli, 5);
             sendTelegramMessage ($token, $chat_id, 'Моя анкета:', 6, $mysqli);
             return;
           }
@@ -2492,9 +2772,25 @@ function processSwitchCommand($token, $chat_id, $username, $text, $mysqli) {
             return;
           }
         }
-        else {
-            sendTelegramMessage ($token, $chat_id, 'Неверная команда', 0, $mysqli);
+        elseif ($showFlag ['verification_flag'] == true) {
+          if (isset($file_id)) {
+            $sqlSetPhoto = ("UPDATE verification_users SET check_image = '$file_id', result = '0' WHERE chat_id = '$chat_id'");
+            $mysqli->query($sqlSetPhoto);
+            $sqlFilter = ("UPDATE users SET verification_flag = false WHERE chat_id = '$chat_id'");
+            $mysqli->query($sqlFilter);
+            sendTelegramMessage ($token, $chat_id, "Ваша фотка отправлена на проверку", 0, $mysqli);
+            sendTelegramMessage ($token, $chat_id, 'Моя анкета:', 6, $mysqli);
             return;
+          }
+          else {
+            sendTelegramMessage ($token, $chat_id, "Отправьте фото", 0, $mysqli);
+            return;
+          }
+
+        }
+        else {
+          sendTelegramMessage ($token, $chat_id, 'Неверная команда', 0, $mysqli);
+          return;
         }
     }
     //Меню Фильтр
@@ -2605,6 +2901,7 @@ function processSwitchCommand($token, $chat_id, $username, $text, $mysqli) {
                                                   OR (second_id = '$chat_id' AND first_id = {$match_id['last_shown_id']})";
             $resultSqlSearchId = $mysqli->query($sqlSearchId);
             $matchSearchId = $resultSqlSearchId->fetch_assoc();
+            ratingChange ($match_id['last_shown_id'], $mysqli, 2);
             // Если строка с NULL NULL
             if (isset($matchSearchId['first_rate']) == false && isset($matchSearchId['second_rate']) == false) {
                 if ($matchSearchId['first_id'] == $chat_id) {
@@ -2762,3 +3059,88 @@ function processSwitchCommand($token, $chat_id, $username, $text, $mysqli) {
 registerCheck ($token, $chat_id, $username, $text, $location, $file_id, $video_id,$mysqli);
 
 $mysqli->close();
+
+
+                                                            //Рейтинг=(Активность)+(Привлекательность)+(Надежность)-(Нелайкнувшие)
+
+                                                            //Нелайкнувшие: Если не лайкнули хотя бы 1 раз за 5 показов то -25
+                                                            //Каждая просмотренная анкета 10 (обнуляется каждые 10 дней)
+                                                            //Количество человек лайкнувших 10
+                                                            //Верификация +100
+                                                            //SoulMate +50
+                                                            //ЗЗ +50
+                                                            //Сброс лайков старше 10 дней
+                                                            //Максимальное количество лайков в день 50 (реферальная ссылка плюс 50)
+                                                            //На каждые 2 Хорошии анкеты 1 Плохая
+
+                                        //Формула нахождения среднего рейтинга пользователоей Среднее = Сумма рейтинга всех пользователей / Количество пользователей
+                                        // Если Рейтинг < Среднее, то анкета Плохая
+                                        // Если Рейтинг >= Среднее, то анкета Хорошая
+
+
+function сalculationAverageRating ($mysqli) {
+    $sqlGetRating = "SELECT rating FROM rating_users";
+    $result = $mysqli->query($sqlGetRating);
+    $countUsers = $result->num_rows();
+    $sum = 0;
+    while ($rating = $result->frechassoc()) {
+        $sum = $rating ['rating'] + $sum;
+    }
+    $averageRating = $sum / $countUsers;
+    return $averageRating;
+}
+
+function definitionQuality ($rating, $averageRating) {
+    if ($rating < $averageRating) {
+        //Анкета плохая
+        $status = false;
+    }
+    else {
+        //Анкета хорошая
+        $status = true;
+    }
+    return $status;
+}
+
+function ratingChange ($chat_id, $mysqli, $action) {
+    switch ($action) {
+        //Просмотр анкеты
+        case 1:
+            $sqlRating = ("UPDATE rating_users SET rating = rating + 10, date_column = NOW() WHERE chat_id = '$chat_id'");
+            break;
+        //Лайк от другого пользователя
+        case 2:
+            $sqlRating = ("UPDATE rating_users SET rating = rating + 10, date_column = NOW() WHERE chat_id = '$chat_id'");
+            break;
+        //Верификация
+        case 3:
+            $sqlRating = ("UPDATE rating_users SET rating = rating + 100, date_column = NOW() WHERE chat_id = '$chat_id'");
+            break;
+        //SoulMate тест
+        case 4:
+            $sqlCheckRating = ("SELECT verification_bonus FROM rating_users WHERE chat_id = '$chat_id'");
+            $result = $mysqli->query($sqlCheckRating);
+            $verification_bonus = $result->fetch_assoc();
+            if ($verification_bonus ['verification_bonus'] != true) {
+              $sqlRating = ("UPDATE rating_users SET rating = rating + 50, date_column = NOW(), verification_bonus = true WHERE chat_id = '$chat_id'");
+              $mysqli->query($sqlRating);
+            }
+            return;
+        //Знак зодиака
+        case 5:
+          $sqlCheckRating = ("SELECT zodiac_bonus FROM rating_users WHERE chat_id = '$chat_id'");
+          $result = $mysqli->query($sqlCheckRating);
+          $zodiac_bonus = $result->fetch_assoc();
+          if ($zodiac_bonus ['zodiac_bonus'] != true) {
+            $sqlRating = ("UPDATE rating_users SET rating = rating + 50, date_column = NOW(), zodiac_bonus = true WHERE chat_id = '$chat_id'");
+            $mysqli->query($sqlRating);
+          }
+          return;
+        //Если не было лайков за 5 показов
+        case 6:
+           $sqlRating = "UPDATE rating_users SET rating = rating - 25, date_column = NOW() WHERE chat_id = '$chat_id'";
+            break;
+    }
+    $mysqli->query($sqlRating);
+    return;
+}
