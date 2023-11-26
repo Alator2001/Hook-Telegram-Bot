@@ -204,24 +204,23 @@ function showAlgorithm ($token, $chat_id, $mysqli) {
                                                 AND reg_step = '10'";
         }
     }
-    $result = $mysqli->query($sql);
+    $resultsql = $mysqli->query($sql);
     //Проверка наличия анкет по фильтру
-    if ($result->num_rows == 0) {
+    if ($resultsql->num_rows == 0) {
         sendTelegramMessage ($token, $chat_id, 'Анкеты закончились', 8, $mysqli);
         $sqlShowFlag = "UPDATE users SET show_flag = FALSE, main_menu_flag = true WHERE chat_id = '$chat_id'";
         $mysqli->query($sqlShowFlag);
         sendTelegramMessage($token, $chat_id, 'Главное меню:', 1, $mysqli);
         return;
     }
-    //-------------------------------------------Закомментил пока тест -------------------------------------------
+    $result = $resultsql->fetch_all(MYSQLI_ASSOC);
     // Распределение по рейтингу
     $averageRating = сalculationAverageRating ($mysqli);
     // Случайным образом выбераем строку из массива результатов
-    $selectedRows = [];
     $randomKey = array_rand($result);
     $rows = $result[$randomKey];
     $match_id = $rows['chat_id'];
-    $selectedRows[] = $match_id;
+    unset($result[$randomKey]);
     // Получаем данные о рейтинге для выбранной пары
     $sqlRating = "SELECT * FROM rating_users WHERE chat_id = '$match_id'";
     $resultSqlRating = $mysqli->query($sqlRating);
@@ -245,12 +244,13 @@ function showAlgorithm ($token, $chat_id, $mysqli) {
     }
     $match_id_status = definitionQuality ($rating, $averageRating);
     while ($match_id_status != $status) {
-      do {
-        $randomKey = array_rand($result);
-        $rows = $result[$randomKey];
-        $match_id = $rows['chat_id'];
-      } while (in_array($match_id, $selectedRows));
-      $selectedRows[] = $match_id;
+      if (empty($result)) { // Проверяем, что массив $result не пустой
+        break;
+      }
+      $randomKey = array_rand($result);
+      $rows = $result[$randomKey];
+      $match_id = $rows['chat_id'];
+      unset($result[$randomKey]);
       $sqlRating = "SELECT * FROM rating_users WHERE chat_id = '$match_id'";
       $resultSqlRating = $mysqli->query($sqlRating);
       $rowRating = $resultSqlRating->fetch_assoc();
@@ -275,6 +275,93 @@ function showAlgorithm ($token, $chat_id, $mysqli) {
         return;
     }
 }
+//--------------------------------------------------------------------------------------------------------------------------------------------
+
+                                                            //Рейтинг=(Активность)+(Привлекательность)+(Надежность)-(Нелайкнувшие)
+
+                                                            //Нелайкнувшие: Если не лайкнули хотя бы 1 раз за 5 показов то -25
+                                                            //Каждая просмотренная анкета 10 (обнуляется каждые 10 дней)
+                                                            //Количество человек лайкнувших 10
+                                                            //Верификация +100
+                                                            //SoulMate +50
+                                                            //ЗЗ +50
+                                                            //Сброс лайков старше 10 дней
+                                                            //Максимальное количество лайков в день 50 (реферальная ссылка плюс 50)
+                                                            //На каждые 2 Хорошии анкеты 1 Плохая
+
+                                        //Формула нахождения среднего рейтинга пользователоей Среднее = Сумма рейтинга всех пользователей / Количество пользователей
+                                        // Если Рейтинг < Среднее, то анкета Плохая
+                                        // Если Рейтинг >= Среднее, то анкета Хорошая
+
+
+function сalculationAverageRating ($mysqli) {
+  $sqlGetRating = "SELECT rating FROM rating_users";
+  $result = $mysqli->query($sqlGetRating);
+  $countUsers = $result->num_rows;
+  $sum = 0;
+  while ($rating = $result->fetch_assoc()) {
+      $sum = $rating ['rating'] + $sum;
+  }
+  $averageRating = $sum / $countUsers;
+  return $averageRating;
+}
+
+function definitionQuality ($rating, $averageRating) {
+  if ($rating < $averageRating) {
+      //Анкета плохая
+      $status = false;
+  }
+  else {
+      //Анкета хорошая
+      $status = true;
+  }
+  return $status;
+}
+
+function ratingChange ($chat_id, $mysqli, $action) {
+  switch ($action) {
+      //Просмотр анкеты
+      case 1:
+          $sqlRating = ("UPDATE rating_users SET rating = rating + 10, date_column = NOW() WHERE chat_id = '$chat_id'");
+          break;
+      //Лайк от другого пользователя
+      case 2:
+          $sqlRating = ("UPDATE rating_users SET rating = rating + 10, date_column = NOW() WHERE chat_id = '$chat_id'");
+          break;
+      //Верификация
+      case 3:
+          $sqlRating = ("UPDATE rating_users SET rating = rating + 100, date_column = NOW() WHERE chat_id = '$chat_id'");
+          break;
+      //SoulMate тест
+      case 4:
+          $sqlCheckRating = ("SELECT verification_bonus FROM rating_users WHERE chat_id = '$chat_id'");
+          $result = $mysqli->query($sqlCheckRating);
+          $verification_bonus = $result->fetch_assoc();
+          if ($verification_bonus ['verification_bonus'] != true) {
+            $sqlRating = ("UPDATE rating_users SET rating = rating + 50, date_column = NOW(), verification_bonus = true WHERE chat_id = '$chat_id'");
+            $mysqli->query($sqlRating);
+          }
+          return;
+      //Знак зодиака
+      case 5:
+        $sqlCheckRating = ("SELECT zodiac_bonus FROM rating_users WHERE chat_id = '$chat_id'");
+        $result = $mysqli->query($sqlCheckRating);
+        $zodiac_bonus = $result->fetch_assoc();
+        if ($zodiac_bonus ['zodiac_bonus'] != true) {
+          $sqlRating = ("UPDATE rating_users SET rating = rating + 50, date_column = NOW(), zodiac_bonus = true WHERE chat_id = '$chat_id'");
+          $mysqli->query($sqlRating);
+        }
+        return;
+      //Если не было лайков за 5 показов
+      case 6:
+          $sqlRating = "UPDATE rating_users SET rating = rating - 25, date_column = NOW() WHERE chat_id = '$chat_id'";
+          break;
+  }
+  $mysqli->query($sqlRating);
+  return;
+}
+
+//--------------------------------------------------------------------------------------------------------------------------------------------
 
 //Функция удаления меню
 function deleteMenu($chat_id, $token, $mysqli) {
@@ -2451,8 +2538,8 @@ function processSwitchCommand($token, $chat_id, $username, $text, $file_id, $mys
             return;
         }
         elseif (($text == '/register' || $text == 'Зарегестрироваться' || $text == 'Редактировать мою анкету') && isset($showFlag ['main_menu_flag']) == false) {
-            $sqlRating = "INSERT INTO rating_users (chat_id, rating, count_dislike, verification_bonus, zodiac_bonus) VALUES ('$chat_id', '500', '0',
-            'false', 'false')";
+            $sqlRating = "INSERT INTO rating_users (chat_id, rating, count_dislike, verification_bonus, zodiac_bonus, status_show) VALUES ('$chat_id', '500', '0',
+            'false', 'false', '0')";
             $mysqli->query($sqlRating);
             $sqlFilter = ("UPDATE users SET main_menu_flag = false WHERE chat_id = '$chat_id'");
             $mysqli->query($sqlFilter);
@@ -3059,88 +3146,3 @@ function processSwitchCommand($token, $chat_id, $username, $text, $file_id, $mys
 registerCheck ($token, $chat_id, $username, $text, $location, $file_id, $video_id,$mysqli);
 
 $mysqli->close();
-
-
-                                                            //Рейтинг=(Активность)+(Привлекательность)+(Надежность)-(Нелайкнувшие)
-
-                                                            //Нелайкнувшие: Если не лайкнули хотя бы 1 раз за 5 показов то -25
-                                                            //Каждая просмотренная анкета 10 (обнуляется каждые 10 дней)
-                                                            //Количество человек лайкнувших 10
-                                                            //Верификация +100
-                                                            //SoulMate +50
-                                                            //ЗЗ +50
-                                                            //Сброс лайков старше 10 дней
-                                                            //Максимальное количество лайков в день 50 (реферальная ссылка плюс 50)
-                                                            //На каждые 2 Хорошии анкеты 1 Плохая
-
-                                        //Формула нахождения среднего рейтинга пользователоей Среднее = Сумма рейтинга всех пользователей / Количество пользователей
-                                        // Если Рейтинг < Среднее, то анкета Плохая
-                                        // Если Рейтинг >= Среднее, то анкета Хорошая
-
-
-function сalculationAverageRating ($mysqli) {
-    $sqlGetRating = "SELECT rating FROM rating_users";
-    $result = $mysqli->query($sqlGetRating);
-    $countUsers = $result->num_rows();
-    $sum = 0;
-    while ($rating = $result->frechassoc()) {
-        $sum = $rating ['rating'] + $sum;
-    }
-    $averageRating = $sum / $countUsers;
-    return $averageRating;
-}
-
-function definitionQuality ($rating, $averageRating) {
-    if ($rating < $averageRating) {
-        //Анкета плохая
-        $status = false;
-    }
-    else {
-        //Анкета хорошая
-        $status = true;
-    }
-    return $status;
-}
-
-function ratingChange ($chat_id, $mysqli, $action) {
-    switch ($action) {
-        //Просмотр анкеты
-        case 1:
-            $sqlRating = ("UPDATE rating_users SET rating = rating + 10, date_column = NOW() WHERE chat_id = '$chat_id'");
-            break;
-        //Лайк от другого пользователя
-        case 2:
-            $sqlRating = ("UPDATE rating_users SET rating = rating + 10, date_column = NOW() WHERE chat_id = '$chat_id'");
-            break;
-        //Верификация
-        case 3:
-            $sqlRating = ("UPDATE rating_users SET rating = rating + 100, date_column = NOW() WHERE chat_id = '$chat_id'");
-            break;
-        //SoulMate тест
-        case 4:
-            $sqlCheckRating = ("SELECT verification_bonus FROM rating_users WHERE chat_id = '$chat_id'");
-            $result = $mysqli->query($sqlCheckRating);
-            $verification_bonus = $result->fetch_assoc();
-            if ($verification_bonus ['verification_bonus'] != true) {
-              $sqlRating = ("UPDATE rating_users SET rating = rating + 50, date_column = NOW(), verification_bonus = true WHERE chat_id = '$chat_id'");
-              $mysqli->query($sqlRating);
-            }
-            return;
-        //Знак зодиака
-        case 5:
-          $sqlCheckRating = ("SELECT zodiac_bonus FROM rating_users WHERE chat_id = '$chat_id'");
-          $result = $mysqli->query($sqlCheckRating);
-          $zodiac_bonus = $result->fetch_assoc();
-          if ($zodiac_bonus ['zodiac_bonus'] != true) {
-            $sqlRating = ("UPDATE rating_users SET rating = rating + 50, date_column = NOW(), zodiac_bonus = true WHERE chat_id = '$chat_id'");
-            $mysqli->query($sqlRating);
-          }
-          return;
-        //Если не было лайков за 5 показов
-        case 6:
-           $sqlRating = "UPDATE rating_users SET rating = rating - 25, date_column = NOW() WHERE chat_id = '$chat_id'";
-            break;
-    }
-    $mysqli->query($sqlRating);
-    return;
-}
