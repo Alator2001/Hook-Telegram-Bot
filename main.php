@@ -2988,7 +2988,10 @@ function processSwitchCommand($token, $chat_id, $username, $text, $file_id, $mys
                                                   OR (second_id = '$chat_id' AND first_id = {$match_id['last_shown_id']})";
             $resultSqlSearchId = $mysqli->query($sqlSearchId);
             $matchSearchId = $resultSqlSearchId->fetch_assoc();
+            //Изменение рейтинга
             ratingChange ($match_id['last_shown_id'], $mysqli, 2);
+            $sqlUpd = ("UPDATE rating_users SET count_dislike = 0 WHERE chat_id = '{$match_id['last_shown_id']}'");
+            $mysqli->query($sqlUpd);
             // Если строка с NULL NULL
             if (isset($matchSearchId['first_rate']) == false && isset($matchSearchId['second_rate']) == false) {
                 if ($matchSearchId['first_id'] == $chat_id) {
@@ -3059,6 +3062,19 @@ function processSwitchCommand($token, $chat_id, $username, $text, $file_id, $mys
                                                   OR (second_id = '$chat_id' AND first_id = {$match_id['last_shown_id']})";
             $resultSqlSearchId = $mysqli->query($sqlSearchId);
             $matchSearchId = $resultSqlSearchId->fetch_assoc();
+            //Измененине рейтинга
+            $sqlCountDislike = "SELECT count_dislike FROM rating_users WHERE chat_id = '{$match_id['last_shown_id']}'";
+            $resultCountDislike = $mysqli->query($sqlCountDislike);
+            $count_dislike = $resultCountDislike->fetch_assoc();
+            if ($count_dislike['count_dislike'] >= 5) {
+              ratingChange ($match_id['last_shown_id'], $mysqli, 6);
+              $sqlReset = ("UPDATE rating_users SET count_dislike = 0 WHERE chat_id = '{$match_id['last_shown_id']}'");
+              $mysqli->query($sqlReset);
+            }
+            else {
+              $sqlUpd = ("UPDATE rating_users SET count_dislike = count_dislike + 1 WHERE chat_id = '{$match_id['last_shown_id']}'");
+              $mysqli->query($sqlUpd);
+            }
             // Если строка с NULL NULL
             if (isset($matchSearchId['first_rate']) == false && isset($matchSearchId['second_rate']) == false) {
                 if ($matchSearchId['first_id'] == $chat_id) {
