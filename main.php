@@ -2632,6 +2632,8 @@ function processSwitchCommand($token, $chat_id, $username, $text, $file_id, $mys
           elseif ($resultSqlCheck->num_rows != 0 && $result == 2) { // Профиль не прошёл проверку
             deleteMenu($chat_id, $token, $mysqli);
             sendTelegramMessage ($token, $chat_id, 'Ваше отправленное фото не прошло проверку, попробуйте ещё раз', 0, $mysqli);
+            $sqlCheck = ("UPDATE verification_users SET count_fingers = $countFingers WHERE chat_id = '$chat_id'");
+            $mysqli->query($sqlCheck);
             $caption = 'Отправьте фото с данным жестом';
             switch ($countFingers) {
               case 1:
