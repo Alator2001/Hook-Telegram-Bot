@@ -468,7 +468,7 @@ function editTelegramMessage($token, $chat_id, $step, $mysqli) {
                             ),
                             array(
                                 array(
-                                    'text' => 'В главное меню',
+                                    'text' => '<< В главное меню',
                                     'callback_data' => '/combacktostartmenu',
                                 ),
                             ),
@@ -505,7 +505,7 @@ function editTelegramMessage($token, $chat_id, $step, $mysqli) {
                         ),
                         array(
                             array(
-                                'text' => 'В главное меню',
+                                'text' => '<< В главное меню',
                                 'callback_data' => '/combacktostartmenu',
                             ),
                         ),
@@ -568,7 +568,7 @@ function editTelegramMessage($token, $chat_id, $step, $mysqli) {
                               ),
                               array(
                                   array(
-                                      'text' => 'В главное меню',
+                                      'text' => '<< В главное меню',
                                       'callback_data' => '/combacktostartmatches',
                                   ),
                               ),
@@ -641,7 +641,7 @@ function editTelegramMessage($token, $chat_id, $step, $mysqli) {
                               ),
                               array(
                                   array(
-                                      'text' => 'В главное меню',
+                                      'text' => '<< В главное меню',
                                       'callback_data' => '/combacktostartmatches',
                                   ),
                               ),
@@ -691,7 +691,7 @@ function editTelegramMessage($token, $chat_id, $step, $mysqli) {
                               ),
                               array(
                                   array(
-                                      'text' => 'В главное меню',
+                                      'text' => '<< В главное меню',
                                       'callback_data' => '/combacktostartmatches',
                                   ),
                               ),
@@ -764,7 +764,7 @@ function editTelegramMessage($token, $chat_id, $step, $mysqli) {
                             ),
                             array(
                                 array(
-                                    'text' => 'В главное меню',
+                                    'text' => '<< В главное меню',
                                     'callback_data' => '/combacktostartmatches',
                                 ),
                             ),
@@ -839,7 +839,7 @@ function sendTelegramMessage($token, $chat_id, $text, $reg_step, $mysqli) {
                         'inline_keyboard' => array(
                             array(
                                 array(
-                                'text' => 'Зарегестрироваться',
+                                'text' => 'Зарегистрироваться',
                                 'callback_data'=>'/register',
                                 ),
                             )),
@@ -958,7 +958,7 @@ function sendTelegramMessage($token, $chat_id, $text, $reg_step, $mysqli) {
                             ),
                             array(
                                 array(
-                                    'text' => 'В главное меню',
+                                    'text' => '<< В главное меню',
                                     'callback_data' => '/combacktostartmenu',
                                 ),
                             ),
@@ -1119,7 +1119,7 @@ function sendTelegramMessage($token, $chat_id, $text, $reg_step, $mysqli) {
                           ),
                           array(
                               array(
-                                  'text' => 'В главное меню',
+                                  'text' => '<< В главное меню',
                                   'callback_data' => '/combacktostartmatches',
                               ),
                           ),
@@ -1192,7 +1192,7 @@ function sendTelegramMessage($token, $chat_id, $text, $reg_step, $mysqli) {
                           ),
                           array(
                               array(
-                                  'text' => 'В главное меню',
+                                  'text' => '<< В главное меню',
                                   'callback_data' => '/combacktostartmatches',
                               ),
                           ),
@@ -1242,7 +1242,7 @@ function sendTelegramMessage($token, $chat_id, $text, $reg_step, $mysqli) {
                           ),
                           array(
                               array(
-                                  'text' => 'В главное меню',
+                                  'text' => '<< В главное меню',
                                   'callback_data' => '/combacktostartmatches',
                               ),
                           ),
@@ -1315,7 +1315,7 @@ function sendTelegramMessage($token, $chat_id, $text, $reg_step, $mysqli) {
                         ),
                         array(
                             array(
-                                'text' => 'В главное меню',
+                                'text' => '<< В главное меню',
                                 'callback_data' => '/combacktostartmatches',
                             ),
                         ),
@@ -1353,7 +1353,7 @@ function sendTelegramMessage($token, $chat_id, $text, $reg_step, $mysqli) {
                         ),
                         array(
                             array(
-                                'text' => 'В главное меню',
+                                'text' => '<< В главное меню',
                                 'callback_data' => '/combacktostartmenu',
                             ),
                         ),
@@ -2507,9 +2507,9 @@ function processSwitchCommand($token, $chat_id, $username, $text, $file_id, $mys
     if ($showFlag ['main_menu_flag'] == true || isset($showFlag ['main_menu_flag']) == false) {
         //Для первого запуска бота
         if ($text == '/begin' && isset($showFlag ['main_menu_flag']) == false) {
-            deleteMenu($chat_id, $token, $mysqli);
-            sendTelegramMessage($token, $chat_id, 'Главное меню:', 1, $mysqli);
-            return;
+          deleteMenu($chat_id, $token, $mysqli);
+          sendTelegramMessage($token, $chat_id, 'Привет, давай создадим твою анкету.', 1, $mysqli);
+          return;
         }
         //Запуск главного меню
         elseif ($text == '/start' && isset($showFlag ['main_menu_flag']) == true) {
@@ -2518,6 +2518,10 @@ function processSwitchCommand($token, $chat_id, $username, $text, $file_id, $mys
             $sqlFilter = ("UPDATE users SET main_menu_flag = true WHERE chat_id = '$chat_id'");
             $mysqli->query($sqlFilter);
             return;
+        }
+        elseif ($text == '/start' && isset($showFlag ['main_menu_flag']) == false) {
+          sendTelegramMessage($token, $chat_id, 'Привет, давай создадим твою анкету.', 1, $mysqli);
+          return;
         }
         elseif (($text == '/filter' || $text == 'Фильтр') && isset($showFlag ['main_menu_flag']) == true) {
             $sqlFilter = ("UPDATE users SET filter_flag = true, main_menu_flag = false WHERE chat_id = '$chat_id'");
@@ -2537,7 +2541,7 @@ function processSwitchCommand($token, $chat_id, $username, $text, $file_id, $mys
             editTelegramMessage($token, $chat_id, 2, $mysqli);
             return;
         }
-        elseif (($text == '/register' || $text == 'Зарегестрироваться' || $text == 'Редактировать мою анкету') && isset($showFlag ['main_menu_flag']) == false) {
+        elseif (($text == '/register' || $text == 'Зарегистрироваться' || $text == 'Редактировать мою анкету') && isset($showFlag ['main_menu_flag']) == false) {
             $sqlRating = "INSERT INTO rating_users (chat_id, rating, count_dislike, verification_bonus, zodiac_bonus, status_show) VALUES ('$chat_id', '500', '0',
             'false', 'false', '0')";
             $mysqli->query($sqlRating);
@@ -2797,7 +2801,7 @@ function processSwitchCommand($token, $chat_id, $username, $text, $file_id, $mys
             testStep_1 ($token, $chat_id, $mysqli);
             return;
         }
-        elseif ($text == '/register' || $text == 'Зарегестрироваться' || $text == 'Редактировать мою анкету') {
+        elseif ($text == '/register' || $text == 'Зарегистрироваться' || $text == 'Редактировать мою анкету') {
             deleteMenu($chat_id, $token, $mysqli);
             $sqlCheckReg = "SELECT * FROM users WHERE chat_id = '$chat_id'";
             $resultCheck = $mysqli->query($sqlCheckReg);
