@@ -2940,6 +2940,17 @@ function processSwitchCommand($token, $chat_id, $username, $text, $file_id, $mys
     $sqlShowFlag = "SELECT * FROM users WHERE chat_id = '$chat_id'";
     $resultSqlShowFlag = $mysqli->query($sqlShowFlag);
     $showFlag = $resultSqlShowFlag->fetch_assoc();
+    //Команда исправления
+    if ($text == '/fix') {
+      deleteMenu($chat_id, $token, $mysqli);
+      sendTelegramMessage($token, $chat_id, 'Главное меню:', 1, $mysqli);
+      $sqlFilter = ("UPDATE users SET main_menu_flag = true, show_flag = false, coming_flag = false, filter_flag = false,
+                     filter_age_flag = false, filter_gender_flag = false, test_flag = false, match_menu_flag = false,
+                     my_profile_menu_flag = false, zodiac_flag = false, verification_flag = false
+                     WHERE chat_id = '$chat_id'");
+      $mysqli->query($sqlFilter);
+      return;
+    }
     //Главное меню
     if ($showFlag ['main_menu_flag'] == true || isset($showFlag ['main_menu_flag']) == false) {
         //Для первого запуска бота
