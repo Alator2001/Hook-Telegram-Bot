@@ -536,7 +536,7 @@ function editTelegramMessage($token, $chat_id, $step, $mysqli) {
                 //Если ЗЗ не установлен
                 if ($resultStatusZodiac->num_rows == 0) {
                   //Если Верификация не пройдена
-                  if ($statusVerification ['result'] == 2) {
+                  if ($statusVerification ['result'] == 2 || $statusVerification ['result'] == 0) {
                     $getQuery = array(
                         "chat_id" => $chat_id,
                         "message_id" => $message_id['message_id'],
@@ -662,7 +662,7 @@ function editTelegramMessage($token, $chat_id, $step, $mysqli) {
                     $sign_emoticon = "♓️";
                   }
                   //Если Верификация не пройдена
-                  if ($statusVerification ['result'] == 2) {
+                  if ($statusVerification ['result'] == 2 || $statusVerification ['result'] == 0) {
                     $getQuery = array(
                         "chat_id" => $chat_id,
                         "message_id" => $message_id['message_id'],
@@ -766,7 +766,7 @@ function editTelegramMessage($token, $chat_id, $step, $mysqli) {
                 ////Если ЗЗ не установлен
                 if ($resultStatusZodiac->num_rows == 0) {
                   //Если Верификация не пройдена
-                  if ($statusVerification ['result'] == 2) {
+                  if ($statusVerification ['result'] == 2 || $statusVerification ['result'] == 0) {
                     $getQuery = array(
                         "chat_id" => $chat_id,
                         "message_id" => $message_id['message_id'],
@@ -892,7 +892,7 @@ function editTelegramMessage($token, $chat_id, $step, $mysqli) {
                     $sign_emoticon = "♓️";
                   }
                   //Если Верификация не пройдена
-                  if ($statusVerification ['result'] == 2) {
+                  if ($statusVerification ['result'] == 2 || $statusVerification ['result'] == 0) {
                     $getQuery = array(
                       "chat_id" => $chat_id,
                       "message_id" => $message_id['message_id'],
@@ -1301,7 +1301,7 @@ function sendTelegramMessage($token, $chat_id, $text, $reg_step, $mysqli) {
               )),
           );
           break;
-//Главное меню
+//Моя анкета
         case 6:
           //Проверка статуса SoulMate
           $sqlStatusTest = "SELECT test_step FROM users WHERE chat_id = '$chat_id'";
@@ -1318,52 +1318,102 @@ function sendTelegramMessage($token, $chat_id, $text, $reg_step, $mysqli) {
 
           if ($statusTest ['test_step'] == 10) {
             if ($resultStatusZodiac->num_rows == 0) {
-              $getQuery = array(
-                  "chat_id" => $chat_id,
-                  "text" => $text,
-                  'disable_notification' => true,
-                  'reply_markup' => json_encode(array(
-                      'inline_keyboard' => array(
-                          array(
-                              array(
-                                  'text' => 'Верификация',
-                                  'callback_data' => '/verification',
-                              ),
-                          ),
-                          array(
-                              array(
-                                  'text' => 'Soul Mate тест: ✅',
-                                  'callback_data' => '/soulmatetest',
-                              ),
-                          ),
-                          array(
+              if ($statusVerification ['result'] == 2 || $statusVerification ['result'] == 0) {
+                $getQuery = array(
+                    "chat_id" => $chat_id,
+                    "text" => $text,
+                    'disable_notification' => true,
+                    'reply_markup' => json_encode(array(
+                        'inline_keyboard' => array(
                             array(
-                                'text' => 'Знак зодиака: ✖️',
-                                'callback_data' => '/zodiacsign',
+                                array(
+                                    'text' => 'Верификация: ✖️',
+                                    'callback_data' => '/verification',
+                                ),
+                            ),
+                            array(
+                                array(
+                                    'text' => 'Soul Mate тест: ✅',
+                                    'callback_data' => '/soulmatetest',
+                                ),
+                            ),
+                            array(
+                              array(
+                                  'text' => 'Знак зодиака: ✖️',
+                                  'callback_data' => '/zodiacsign',
+                              ),
+                          ),
+                            array(
+                                array(
+                                    'text' => 'Редактировать мою анкету',
+                                    'callback_data' => '/register',
+                                ),
+                            ),
+                            array(
+                                array(
+                                    'text' => 'Показать мою анкету',
+                                    'callback_data' => '/showprofile',
+                                ),
+                            ),
+                            array(
+                                array(
+                                    'text' => '<< В главное меню',
+                                    'callback_data' => '/combacktostartmatches',
+                                ),
                             ),
                         ),
-                          array(
+                    )),
+                );
+                break;
+              }
+              elseif ($statusVerification ['result'] == 1) {
+                $getQuery = array(
+                    "chat_id" => $chat_id,
+                    "text" => $text,
+                    'disable_notification' => true,
+                    'reply_markup' => json_encode(array(
+                        'inline_keyboard' => array(
+                            array(
+                                array(
+                                    'text' => 'Верификация: ✅',
+                                    'callback_data' => '/verification',
+                                ),
+                            ),
+                            array(
+                                array(
+                                    'text' => 'Soul Mate тест: ✅',
+                                    'callback_data' => '/soulmatetest',
+                                ),
+                            ),
+                            array(
                               array(
-                                  'text' => 'Редактировать мою анкету',
-                                  'callback_data' => '/register',
+                                  'text' => 'Знак зодиака: ✖️',
+                                  'callback_data' => '/zodiacsign',
                               ),
                           ),
-                          array(
-                              array(
-                                  'text' => 'Показать мою анкету',
-                                  'callback_data' => '/showprofile',
-                              ),
-                          ),
-                          array(
-                              array(
-                                  'text' => '<< В главное меню',
-                                  'callback_data' => '/combacktostartmatches',
-                              ),
-                          ),
-                      ),
-                  )),
-              );
-              break;
+                            array(
+                                array(
+                                    'text' => 'Редактировать мою анкету',
+                                    'callback_data' => '/register',
+                                ),
+                            ),
+                            array(
+                                array(
+                                    'text' => 'Показать мою анкету',
+                                    'callback_data' => '/showprofile',
+                                ),
+                            ),
+                            array(
+                                array(
+                                    'text' => '<< В главное меню',
+                                    'callback_data' => '/combacktostartmatches',
+                                ),
+                            ),
+                        ),
+                    )),
+                );
+                break;
+              }
             }
             elseif ($resultStatusZodiac->num_rows != 0) {
               if ($statusZodiac['zodiac_sign'] == 'Овен') {
@@ -1391,7 +1441,231 @@ function sendTelegramMessage($token, $chat_id, $text, $reg_step, $mysqli) {
               } elseif ($statusZodiac['zodiac_sign'] == 'Рыбы') {
                 $sign_emoticon = "♓️";
               }
-              $getQuery = array(
+              if ($statusVerification ['result'] == 2 || $statusVerification ['result'] == 0) {
+                $getQuery = array(
+                    "chat_id" => $chat_id,
+                    "text" => $text,
+                    'disable_notification' => true,
+                    'reply_markup' => json_encode(array(
+                        'inline_keyboard' => array(
+                            array(
+                                array(
+                                    'text' => 'Верификация: ✖️',
+                                    'callback_data' => '/verification',
+                                ),
+                            ),
+                            array(
+                                array(
+                                    'text' => 'Soul Mate тест: ✅',
+                                    'callback_data' => '/soulmatetest',
+                                ),
+                            ),
+                            array(
+                              array(
+                                  'text' => 'Знак зодиака: '.$sign_emoticon,
+                                  'callback_data' => '/zodiacsign',
+                              ),
+                          ),
+                            array(
+                                array(
+                                    'text' => 'Редактировать мою анкету',
+                                    'callback_data' => '/register',
+                                ),
+                            ),
+                            array(
+                                array(
+                                    'text' => 'Показать мою анкету',
+                                    'callback_data' => '/showprofile',
+                                ),
+                            ),
+                            array(
+                                array(
+                                    'text' => '<< В главное меню',
+                                    'callback_data' => '/combacktostartmatches',
+                                ),
+                            ),
+                        ),
+                    )),
+                );
+                break;
+              }
+              elseif ($statusVerification ['result'] == 1) {
+                $getQuery = array(
+                    "chat_id" => $chat_id,
+                    "text" => $text,
+                    'disable_notification' => true,
+                    'reply_markup' => json_encode(array(
+                        'inline_keyboard' => array(
+                            array(
+                                array(
+                                    'text' => 'Верификация: ✅',
+                                    'callback_data' => '/verification',
+                                ),
+                            ),
+                            array(
+                                array(
+                                    'text' => 'Soul Mate тест: ✅',
+                                    'callback_data' => '/soulmatetest',
+                                ),
+                            ),
+                            array(
+                              array(
+                                  'text' => 'Знак зодиака: '.$sign_emoticon,
+                                  'callback_data' => '/zodiacsign',
+                              ),
+                          ),
+                            array(
+                                array(
+                                    'text' => 'Редактировать мою анкету',
+                                    'callback_data' => '/register',
+                                ),
+                            ),
+                            array(
+                                array(
+                                    'text' => 'Показать мою анкету',
+                                    'callback_data' => '/showprofile',
+                                ),
+                            ),
+                            array(
+                                array(
+                                    'text' => '<< В главное меню',
+                                    'callback_data' => '/combacktostartmatches',
+                                ),
+                            ),
+                        ),
+                    )),
+                );
+                break;
+              }
+            }
+          }
+          else {
+            if ($resultStatusZodiac->num_rows == 0) {
+              if ($statusVerification ['result'] == 2 || $statusVerification ['result'] == 0) {
+                $getQuery = array(
+                    "chat_id" => $chat_id,
+                    "text" => $text,
+                    'disable_notification' => true,
+                    'reply_markup' => json_encode(array(
+                        'inline_keyboard' => array(
+                            array(
+                                array(
+                                    'text' => 'Верификация: ✖️',
+                                    'callback_data' => '/verification',
+                                ),
+                            ),
+                            array(
+                                array(
+                                    'text' => 'Soul Mate тест: ✖️',
+                                    'callback_data' => '/soulmatetest',
+                                ),
+                            ),
+                            array(
+                              array(
+                                  'text' => 'Знак зодиака: ✖️',
+                                  'callback_data' => '/zodiacsign',
+                              ),
+                          ),
+                            array(
+                                array(
+                                    'text' => 'Редактировать мою анкету',
+                                    'callback_data' => '/register',
+                                ),
+                            ),
+                            array(
+                                array(
+                                    'text' => 'Показать мою анкету',
+                                    'callback_data' => '/showprofile',
+                                ),
+                            ),
+                            array(
+                                array(
+                                    'text' => '<< В главное меню',
+                                    'callback_data' => '/combacktostartmatches',
+                                ),
+                            ),
+                        ),
+                    )),
+                );
+                break;
+              }
+              elseif ($statusVerification ['result'] == 1) {
+                $getQuery = array(
+                    "chat_id" => $chat_id,
+                    "text" => $text,
+                    'disable_notification' => true,
+                    'reply_markup' => json_encode(array(
+                        'inline_keyboard' => array(
+                            array(
+                                array(
+                                    'text' => 'Верификация: ✅',
+                                    'callback_data' => '/verification',
+                                ),
+                            ),
+                            array(
+                                array(
+                                    'text' => 'Soul Mate тест: ✖️',
+                                    'callback_data' => '/soulmatetest',
+                                ),
+                            ),
+                            array(
+                              array(
+                                  'text' => 'Знак зодиака: ✖️',
+                                  'callback_data' => '/zodiacsign',
+                              ),
+                          ),
+                            array(
+                                array(
+                                    'text' => 'Редактировать мою анкету',
+                                    'callback_data' => '/register',
+                                ),
+                            ),
+                            array(
+                                array(
+                                    'text' => 'Показать мою анкету',
+                                    'callback_data' => '/showprofile',
+                                ),
+                            ),
+                            array(
+                                array(
+                                    'text' => '<< В главное меню',
+                                    'callback_data' => '/combacktostartmatches',
+                                ),
+                            ),
+                        ),
+                    )),
+                );
+                break;
+              }
+            }
+            elseif ($resultStatusZodiac->num_rows != 0) {
+              if ($statusZodiac['zodiac_sign'] == 'Овен') {
+                $sign_emoticon = "♈️";
+              } elseif ($statusZodiac['zodiac_sign'] == 'Телец') {
+                $sign_emoticon = "♉️";
+              } elseif ($statusZodiac['zodiac_sign'] == 'Близнецы') {
+                $sign_emoticon = "♊️";
+              } elseif ($statusZodiac['zodiac_sign'] == 'Рак') {
+                $sign_emoticon = "♋️";
+              } elseif ($statusZodiac['zodiac_sign'] == 'Лев') {
+                $sign_emoticon = "♌️";
+              } elseif ($statusZodiac['zodiac_sign'] == 'Дева') {
+                $sign_emoticon = "♍️";
+              } elseif ($statusZodiac['zodiac_sign'] == 'Весы') {
+                $sign_emoticon = "♎️";
+              } elseif ($statusZodiac['zodiac_sign'] == 'Скорпион') {
+                $sign_emoticon = "♏️";
+              } elseif ($statusZodiac['zodiac_sign'] == 'Стрелец') {
+                $sign_emoticon = "♐️";
+              } elseif ($statusZodiac['zodiac_sign'] == 'Козерог') {
+                $sign_emoticon = "♑️";
+              } elseif ($statusZodiac['zodiac_sign'] == 'Водолей') {
+                $sign_emoticon = "♒️";
+              } elseif ($statusZodiac['zodiac_sign'] == 'Рыбы') {
+                $sign_emoticon = "♓️";
+              }
+              if ($statusVerification ['result'] == 2 || $statusVerification ['result'] == 0) {
+                $getQuery = array(
                   "chat_id" => $chat_id,
                   "text" => $text,
                   'disable_notification' => true,
@@ -1399,13 +1673,13 @@ function sendTelegramMessage($token, $chat_id, $text, $reg_step, $mysqli) {
                       'inline_keyboard' => array(
                           array(
                               array(
-                                  'text' => 'Верификация',
+                                  'text' => 'Верификация: ✖️',
                                   'callback_data' => '/verification',
                               ),
                           ),
                           array(
                               array(
-                                  'text' => 'Soul Mate тест: ✅',
+                                  'text' => 'Soul Mate тест: ✖️',
                                   'callback_data' => '/soulmatetest',
                               ),
                           ),
@@ -1437,11 +1711,9 @@ function sendTelegramMessage($token, $chat_id, $text, $reg_step, $mysqli) {
                   )),
               );
               break;
-            }
-          }
-          else {
-            if ($resultStatusZodiac->num_rows == 0) {
-              $getQuery = array(
+              }
+              elseif ($statusVerification ['result'] == 1) {
+                $getQuery = array(
                   "chat_id" => $chat_id,
                   "text" => $text,
                   'disable_notification' => true,
@@ -1449,7 +1721,7 @@ function sendTelegramMessage($token, $chat_id, $text, $reg_step, $mysqli) {
                       'inline_keyboard' => array(
                           array(
                               array(
-                                  'text' => 'Верификация',
+                                  'text' => 'Верификация: ✅',
                                   'callback_data' => '/verification',
                               ),
                           ),
@@ -1461,7 +1733,7 @@ function sendTelegramMessage($token, $chat_id, $text, $reg_step, $mysqli) {
                           ),
                           array(
                             array(
-                                'text' => 'Знак зодиака: ✖️',
+                                'text' => 'Знак зодиака: '.$sign_emoticon,
                                 'callback_data' => '/zodiacsign',
                             ),
                         ),
@@ -1487,79 +1759,7 @@ function sendTelegramMessage($token, $chat_id, $text, $reg_step, $mysqli) {
                   )),
               );
               break;
-            }
-            elseif ($resultStatusZodiac->num_rows != 0) {
-              if ($statusZodiac['zodiac_sign'] == 'Овен') {
-                $sign_emoticon = "♈️";
-              } elseif ($statusZodiac['zodiac_sign'] == 'Телец') {
-                $sign_emoticon = "♉️";
-              } elseif ($statusZodiac['zodiac_sign'] == 'Близнецы') {
-                $sign_emoticon = "♊️";
-              } elseif ($statusZodiac['zodiac_sign'] == 'Рак') {
-                $sign_emoticon = "♋️";
-              } elseif ($statusZodiac['zodiac_sign'] == 'Лев') {
-                $sign_emoticon = "♌️";
-              } elseif ($statusZodiac['zodiac_sign'] == 'Дева') {
-                $sign_emoticon = "♍️";
-              } elseif ($statusZodiac['zodiac_sign'] == 'Весы') {
-                $sign_emoticon = "♎️";
-              } elseif ($statusZodiac['zodiac_sign'] == 'Скорпион') {
-                $sign_emoticon = "♏️";
-              } elseif ($statusZodiac['zodiac_sign'] == 'Стрелец') {
-                $sign_emoticon = "♐️";
-              } elseif ($statusZodiac['zodiac_sign'] == 'Козерог') {
-                $sign_emoticon = "♑️";
-              } elseif ($statusZodiac['zodiac_sign'] == 'Водолей') {
-                $sign_emoticon = "♒️";
-              } elseif ($statusZodiac['zodiac_sign'] == 'Рыбы') {
-                $sign_emoticon = "♓️";
               }
-              $getQuery = array(
-                "chat_id" => $chat_id,
-                "text" => $text,
-                'disable_notification' => true,
-                'reply_markup' => json_encode(array(
-                    'inline_keyboard' => array(
-                        array(
-                            array(
-                                'text' => 'Верификация',
-                                'callback_data' => '/verification',
-                            ),
-                        ),
-                        array(
-                            array(
-                                'text' => 'Soul Mate тест: ✖️',
-                                'callback_data' => '/soulmatetest',
-                            ),
-                        ),
-                        array(
-                          array(
-                              'text' => 'Знак зодиака: '.$sign_emoticon,
-                              'callback_data' => '/zodiacsign',
-                          ),
-                      ),
-                        array(
-                            array(
-                                'text' => 'Редактировать мою анкету',
-                                'callback_data' => '/register',
-                            ),
-                        ),
-                        array(
-                            array(
-                                'text' => 'Показать мою анкету',
-                                'callback_data' => '/showprofile',
-                            ),
-                        ),
-                        array(
-                            array(
-                                'text' => '<< В главное меню',
-                                'callback_data' => '/combacktostartmatches',
-                            ),
-                        ),
-                    ),
-                )),
-            );
-            break;
             }
           }
         case 7:
