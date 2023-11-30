@@ -406,6 +406,15 @@ function editTelegramMessage($token, $chat_id, $step, $mysqli) {
             elseif ($filter['filter_location'] == 'local') {
               $filter_location = 'по городу';
             }
+            if ($filter['favorite_gender'] == 'Женский') {
+                $favorite_gender = 'Девушки';
+            }
+            elseif ($filter['favorite_gender'] == 'Мужской') {
+                $favorite_gender = 'Парни';
+            }
+            elseif ($filter['favorite_gender'] == 'Все') {
+                $favorite_gender = 'Все';
+            }
             //Меню фильтрации при поиске
             if ($filter['show_flag'] == true) {
                 $getQuery = array(
@@ -428,7 +437,7 @@ function editTelegramMessage($token, $chat_id, $step, $mysqli) {
                             ),
                             array(
                                 array(
-                                    'text' => 'Кого вы ищете: '.$filter['favorite_gender'],
+                                    'text' => 'Кого вы ищете: '.$favorite_gender,
                                     'callback_data' => '/favorite_gender',
                                 ),
                             ),
@@ -465,7 +474,7 @@ function editTelegramMessage($token, $chat_id, $step, $mysqli) {
                             ),
                             array(
                                 array(
-                                    'text' => 'Кого вы ищете: '.$filter['favorite_gender'],
+                                    'text' => 'Кого вы ищете: '.$favorite_gender,
                                     'callback_data' => '/favorite_gender',
                                 ),
                             ),
