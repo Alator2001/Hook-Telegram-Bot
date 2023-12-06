@@ -2023,7 +2023,7 @@ function showProfile ($token, $chat_id, $match_id, $mysqli) {
         $caption = $rowsProfile['name'] . ', ' . $rowsProfile['age'] . ', ' . $rowsProfile['city']."\n" . $rowsProfile['description'];
       }
       elseif ($verification['result'] == 1) {
-        $caption ='✅ ' . $rowsProfile['name'] . ', ' . $rowsProfile['age'] . ', ' . $rowsProfile['city']."\n" . $rowsProfile['description'];
+        $caption = $rowsProfile['name'] . ', ' . $rowsProfile['age'] . ', ' . $rowsProfile['city']."\n" .'✅ Профиль подтверждён'."\n".$rowsProfile['description'];
       }
     }
     else {
@@ -2048,7 +2048,7 @@ function showProfile ($token, $chat_id, $match_id, $mysqli) {
                         $answers1 = [$rowsProfile['test_1'], $rowsProfile['test_2'], $rowsProfile['test_3'], $rowsProfile['test_4'], $rowsProfile['test_5'],];
                         $answers2 = [$rowLocationChatId['test_1'], $rowLocationChatId['test_2'], $rowLocationChatId['test_3'], $rowLocationChatId['test_4'], $rowLocationChatId['test_5'],];
                         $compatibility = kendallTauCompatibility ($answers1, $answers2);
-                        $caption = '✅ ' . $rowsProfile['name'] . ', ' . $rowsProfile['age'] . ', ' . $rowsProfile['city'] . ' 📍'.$distance. " метров"."\n"."SoulMate: ".$compatibility.'%'."\n" . $rowsProfile['description'];
+                        $caption = $rowsProfile['name'] . ', ' . $rowsProfile['age'] . ', ' . $rowsProfile['city'] . ' 📍'.$distance. " метров"."\n".'✅ Профиль подтверждён'."\n"."SoulMate: ".$compatibility.'%'."\n" . $rowsProfile['description'];
                       }
 
                 }
@@ -2068,7 +2068,7 @@ function showProfile ($token, $chat_id, $match_id, $mysqli) {
                     $compatibility = kendallTauCompatibility ($answers1, $answers2);
                     //вызов функции сравнения совместимости ЗЗ
 
-                    $caption ='✅ ' . $rowsProfile['name'] . ', ' . $rowsProfile['age'] . ', ' . $rowsProfile['city'] . ' 📍'.$distance. " метров"."\n"."SoulMate: ".$compatibility.'%'."\n".$rowZodiacMatchId['zodiac_sign']."\n".$rowsProfile['description'];
+                    $caption =$rowsProfile['name'] . ', ' . $rowsProfile['age'] . ', ' . $rowsProfile['city'] . ' 📍'.$distance. " метров"."\n".'✅ Профиль подтверждён'."\n"."SoulMate: ".$compatibility.'%'."\n".$rowZodiacMatchId['zodiac_sign']."\n".$rowsProfile['description'];
                   }
                 }
                 //Если нет теста у chat_id и есть знака задиака у обоих
@@ -2081,7 +2081,7 @@ function showProfile ($token, $chat_id, $match_id, $mysqli) {
                   elseif ($verification['result'] == 1) {
                     //вызов функции сравнения совместимости ЗЗ
 
-                    $caption ='✅ ' .$rowsProfile['name'] . ', ' . $rowsProfile['age'] . ', ' . $rowsProfile['city'] . ' 📍'.$distance. " метров"."\n".$rowZodiacMatchId['zodiac_sign']."\n".$rowsProfile['description'];
+                    $caption =$rowsProfile['name'] . ', ' . $rowsProfile['age'] . ', ' . $rowsProfile['city'] . ' 📍'.$distance. " метров"."\n".'✅ Профиль подтверждён'."\n".$rowZodiacMatchId['zodiac_sign']."\n".$rowsProfile['description'];
                   }
 
                 }
@@ -2090,7 +2090,7 @@ function showProfile ($token, $chat_id, $match_id, $mysqli) {
                     $caption = $rowsProfile['name'] . ', ' . $rowsProfile['age'] . ', ' . $rowsProfile['city'] . ' 📍'.$distance. " метров"."\n" . $rowsProfile['description'];
                   }
                   elseif ($verification['result'] == 1) {
-                    $caption ='✅ ' . $rowsProfile['name'] . ', ' . $rowsProfile['age'] . ', ' . $rowsProfile['city'] . ' 📍'.$distance. " метров"."\n" . $rowsProfile['description'];
+                    $caption = $rowsProfile['name'] . ', ' . $rowsProfile['age'] . ', ' . $rowsProfile['city'] . ' 📍'.$distance. " метров"."\n" .'✅ Профиль подтверждён'."\n". $rowsProfile['description'];
                   }
                 }
             }
@@ -2109,7 +2109,7 @@ function showProfile ($token, $chat_id, $match_id, $mysqli) {
                     $answers1 = [$rowsProfile['test_1'], $rowsProfile['test_2'], $rowsProfile['test_3'], $rowsProfile['test_4'], $rowsProfile['test_5'],];
                     $answers2 = [$rowLocationChatId['test_1'], $rowLocationChatId['test_2'], $rowLocationChatId['test_3'], $rowLocationChatId['test_4'], $rowLocationChatId['test_5'],];
                     $compatibility = kendallTauCompatibility ($answers1, $answers2);
-                    $caption ='✅ ' . $rowsProfile['name'] . ', ' . $rowsProfile['age'] . ', ' . $rowsProfile['city'] . ' 📍'.$distance. ' км'."\n".'SoulMate: '.$compatibility.'%'."\n" . $rowsProfile['description'];
+                    $caption = $rowsProfile['name'] . ', ' . $rowsProfile['age'] . ', ' . $rowsProfile['city'] . ' 📍'.$distance. ' км'."\n".'✅ Профиль подтверждён'."\n".'SoulMate: '.$compatibility.'%'."\n" . $rowsProfile['description'];
                   }
                 }
                 //Если есть тест у обоих и есть знака задиака у обоих
@@ -2128,7 +2128,7 @@ function showProfile ($token, $chat_id, $match_id, $mysqli) {
                     $compatibility = kendallTauCompatibility ($answers1, $answers2);
                     //вызов функции сравнения совместимости ЗЗ
 
-                    $caption ='✅ ' . $rowsProfile['name'] . ', ' . $rowsProfile['age'] . ', ' . $rowsProfile['city'] . ' 📍'.$distance. " км"."\n"."SoulMate: ".$compatibility.'%'."\n".$rowZodiacMatchId['zodiac_sign']."\n".$rowsProfile['description'];
+                    $caption = $rowsProfile['name'] . ', ' . $rowsProfile['age'] . ', ' . $rowsProfile['city'] . ' 📍'.$distance. " км"."\n".'✅ Профиль подтверждён'."\n"."SoulMate: ".$compatibility.'%'."\n".$rowZodiacMatchId['zodiac_sign']."\n".$rowsProfile['description'];
                   }
                 }
                 //Если нет теста у chat_id и есть знака задиака у обоих
@@ -2141,7 +2141,7 @@ function showProfile ($token, $chat_id, $match_id, $mysqli) {
                   elseif ($verification['result'] ==1) {
                     //вызов функции сравнения совместимости ЗЗ
 
-                    $caption ='✅ ' . $rowsProfile['name'] . ', ' . $rowsProfile['age'] . ', ' . $rowsProfile['city'] . ' 📍'.$distance. " км"."\n".$rowZodiacMatchId['zodiac_sign']."\n".$rowsProfile['description'];
+                    $caption = $rowsProfile['name'] . ', ' . $rowsProfile['age'] . ', ' . $rowsProfile['city'] . ' 📍'.$distance. " км"."\n".'✅ Профиль подтверждён'."\n".$rowZodiacMatchId['zodiac_sign']."\n".$rowsProfile['description'];
                   }
                 }
                 else {
@@ -2149,7 +2149,7 @@ function showProfile ($token, $chat_id, $match_id, $mysqli) {
                     $caption = $rowsProfile['name'] . ', ' . $rowsProfile['age'] . ', ' . $rowsProfile['city'] . ' 📍'.$distance. ' км'."\n". $rowsProfile['description'];
                   }
                   elseif ($verification['result'] == 0 || $verification['result'] == 2) {
-                    $caption ='✅ ' . $rowsProfile['name'] . ', ' . $rowsProfile['age'] . ', ' . $rowsProfile['city'] . ' 📍'.$distance. ' км'."\n". $rowsProfile['description'];
+                    $caption = $rowsProfile['name'] . ', ' . $rowsProfile['age'] . ', ' . $rowsProfile['city'] . ' 📍'.$distance. ' км'."\n".'✅ Профиль подтверждён'."\n". $rowsProfile['description'];
                   }
                 }
             }
@@ -2166,7 +2166,7 @@ function showProfile ($token, $chat_id, $match_id, $mysqli) {
               $answers1 = [$rowsProfile['test_1'], $rowsProfile['test_2'], $rowsProfile['test_3'], $rowsProfile['test_4'], $rowsProfile['test_5'],];
               $answers2 = [$rowLocationChatId['test_1'], $rowLocationChatId['test_2'], $rowLocationChatId['test_3'], $rowLocationChatId['test_4'], $rowLocationChatId['test_5'],];
               $compatibility = kendallTauCompatibility ($answers1, $answers2);
-              $caption ='✅ ' . $rowsProfile['name'] . ', ' . $rowsProfile['age'] . ', ' . $rowsProfile['city'] . "\n".'SoulMate: '.$compatibility.'%'."\n" . $rowsProfile['description'];
+              $caption = $rowsProfile['name'] . ', ' . $rowsProfile['age'] . ', ' . $rowsProfile['city'] . "\n".'✅ Профиль подтверждён'."\n".'SoulMate: '.$compatibility.'%'."\n" . $rowsProfile['description'];
             }
           }
           elseif ($rowsProfile['test_step'] == 10 && $rowLocationChatId['test_step'] == 10 &&  isset($rowZodiacChatId['zodiac_sign']) == true && isset($rowZodiacMatchId['zodiac_sign']) == true) {
@@ -2184,7 +2184,7 @@ function showProfile ($token, $chat_id, $match_id, $mysqli) {
               $compatibility = kendallTauCompatibility ($answers1, $answers2);
               //вызов функции сравнения совместимости ЗЗ
 
-              $caption ='✅ ' . $rowsProfile['name'] . ', ' . $rowsProfile['age'] . ', ' . $rowsProfile['city'] ."\n"."SoulMate: ".$compatibility.'%'."\n".$rowZodiacMatchId['zodiac_sign']."\n".$rowsProfile['description'];
+              $caption = $rowsProfile['name'] . ', ' . $rowsProfile['age'] . ', ' . $rowsProfile['city'] ."\n".'✅ Профиль подтверждён'."\n"."SoulMate: ".$compatibility.'%'."\n".$rowZodiacMatchId['zodiac_sign']."\n".$rowsProfile['description'];
             }
           }
           //Если нет теста у chat_id и есть знака задиака у обоих
@@ -2197,7 +2197,7 @@ function showProfile ($token, $chat_id, $match_id, $mysqli) {
             elseif ($verification['result'] == 1) {
               //вызов функции сравнения совместимости ЗЗ
 
-              $caption ='✅ ' . $rowsProfile['name'] . ', ' . $rowsProfile['age'] . ', ' . $rowsProfile['city']."\n".$rowZodiacMatchId['zodiac_sign']."\n".$rowsProfile['description'];
+              $caption = $rowsProfile['name'] . ', ' . $rowsProfile['age'] . ', ' . $rowsProfile['city']."\n".'✅ Профиль подтверждён'."\n".$rowZodiacMatchId['zodiac_sign']."\n".$rowsProfile['description'];
             }
           }
           else {
@@ -2205,7 +2205,7 @@ function showProfile ($token, $chat_id, $match_id, $mysqli) {
               $caption = $rowsProfile['name'] . ', ' . $rowsProfile['age'] . ', ' . $rowsProfile['city'] ."\n". $rowsProfile['description'];
             }
             elseif ($verification['result'] == 1) {
-              $caption ='✅ ' . $rowsProfile['name'] . ', ' . $rowsProfile['age'] . ', ' . $rowsProfile['city'] ."\n". $rowsProfile['description'];
+              $caption = $rowsProfile['name'] . ', ' . $rowsProfile['age'] . ', ' . $rowsProfile['city'] ."\n".'✅ Профиль подтверждён'."\n". $rowsProfile['description'];
             }
           }
       }
