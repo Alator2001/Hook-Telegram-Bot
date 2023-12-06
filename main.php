@@ -540,6 +540,10 @@ function editTelegramMessage($token, $chat_id, $step, $mysqli) {
             $sqlStatusVerification = "SELECT result FROM verification_users WHERE chat_id = '$chat_id'";
             $resultStatusVerification = $mysqli->query($sqlStatusVerification);
             $statusVerification = $resultStatusVerification->fetch_assoc();
+            //Проверка привязки instagram
+            $sqlStatusInstagram = "SELECT instagram FROM users WHERE chat_id = '$chat_id'";
+            $resultStatusInstagram = $mysqli->query($sqlStatusInstagram);
+            $statusInstagram = $resultStatusInstagram->fetch_assoc();
             //Если SM пройден
             if ($statusTest ['test_step'] == 10) {
                 //Если ЗЗ не установлен
@@ -556,6 +560,12 @@ function editTelegramMessage($token, $chat_id, $step, $mysqli) {
                                     array(
                                         'text' => 'Верификация: ✖️',
                                         'callback_data' => '/verification',
+                                    ),
+                                ),
+                                array(
+                                    array(
+                                        'text' => 'Привязка Instagram: '.$statusInstagram,
+                                        'callback_data' => '/instagram',
                                     ),
                                 ),
                                 array(
@@ -605,6 +615,12 @@ function editTelegramMessage($token, $chat_id, $step, $mysqli) {
                                 array(
                                     'text' => 'Верификация: ✅',
                                     'callback_data' => '/verification',
+                                ),
+                            ),
+                            array(
+                                array(
+                                    'text' => 'Привязка Instagram: '.$statusInstagram,
+                                    'callback_data' => '/instagram',
                                 ),
                             ),
                             array(
@@ -686,6 +702,12 @@ function editTelegramMessage($token, $chat_id, $step, $mysqli) {
                                 ),
                                 array(
                                     array(
+                                        'text' => 'Привязка Instagram: '.$statusInstagram,
+                                        'callback_data' => '/instagram',
+                                    ),
+                                ),
+                                array(
+                                    array(
                                         'text' => 'Soul Mate тест: ✅',
                                         'callback_data' => '/soulmatetest',
                                     ),
@@ -731,6 +753,12 @@ function editTelegramMessage($token, $chat_id, $step, $mysqli) {
                                     array(
                                         'text' => 'Верификация: ✅',
                                         'callback_data' => '/verification',
+                                    ),
+                                ),
+                                array(
+                                    array(
+                                        'text' => 'Привязка Instagram: '.$statusInstagram,
+                                        'callback_data' => '/instagram',
                                     ),
                                 ),
                                 array(
@@ -790,6 +818,12 @@ function editTelegramMessage($token, $chat_id, $step, $mysqli) {
                                 ),
                                 array(
                                     array(
+                                        'text' => 'Привязка Instagram: '.$statusInstagram,
+                                        'callback_data' => '/instagram',
+                                    ),
+                                ),
+                                array(
+                                    array(
                                         'text' => 'Soul Mate тест: ✖️',
                                         'callback_data' => '/soulmatetest',
                                     ),
@@ -835,6 +869,12 @@ function editTelegramMessage($token, $chat_id, $step, $mysqli) {
                                     array(
                                         'text' => 'Верификация: ✅',
                                         'callback_data' => '/verification',
+                                    ),
+                                ),
+                                array(
+                                    array(
+                                        'text' => 'Привязка Instagram: '.$statusInstagram,
+                                        'callback_data' => '/instagram',
                                     ),
                                 ),
                                 array(
@@ -915,6 +955,12 @@ function editTelegramMessage($token, $chat_id, $step, $mysqli) {
                                   ),
                               ),
                               array(
+                                array(
+                                    'text' => 'Привязка Instagram: '.$statusInstagram,
+                                    'callback_data' => '/instagram',
+                                ),
+                              ),
+                              array(
                                   array(
                                       'text' => 'Soul Mate тест: ✖️',
                                       'callback_data' => '/soulmatetest',
@@ -962,6 +1008,12 @@ function editTelegramMessage($token, $chat_id, $step, $mysqli) {
                                       'text' => 'Верификация: ✅',
                                       'callback_data' => '/verification',
                                   ),
+                              ),
+                              array(
+                                array(
+                                    'text' => 'Привязка Instagram: '.$statusInstagram,
+                                    'callback_data' => '/instagram',
+                                ),
                               ),
                               array(
                                   array(
@@ -3369,6 +3421,13 @@ function processSwitchCommand($token, $chat_id, $username, $text, $file_id, $mys
             testStep_1 ($token, $chat_id, $mysqli);
             return;
         }
+        elseif ($text == '/instagram' || $text == 'Привязка Instagram: ') {
+            $sqlFilter = ("UPDATE users SET insta_flag = true WHERE chat_id = '$chat_id'");
+            $mysqli->query($sqlFilter);
+            deleteMenu($chat_id, $token, $mysqli);
+            sendTelegramMessage ($token, $chat_id, "Вставьте ссылку на свой профиль", 0, $mysqli);
+            return;
+        }
         elseif ($text == '/register' || $text == 'Зарегистрироваться' || $text == 'Редактировать мою анкету') {
             deleteMenu($chat_id, $token, $mysqli);
             $sqlCheckReg = "SELECT * FROM users WHERE chat_id = '$chat_id'";
@@ -3448,6 +3507,12 @@ function processSwitchCommand($token, $chat_id, $username, $text, $file_id, $mys
             return;
           }
 
+        }
+        elseif ($showFlag ['insta_flag'] == true) {
+            
+            $sqlFilter = ("UPDATE users SET insta_flag = false WHERE chat_id = '$chat_id'");
+            $mysqli->query($sqlFilter);
+            return;
         }
         else {
           sendTelegramMessage ($token, $chat_id, 'Неверная команда', 0, $mysqli);
