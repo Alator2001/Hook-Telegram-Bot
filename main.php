@@ -2471,7 +2471,7 @@ function registerStep_2 ($token, $chat_id, $mysqli) {
 }
 
 function registerStep_3 ($token, $chat_id, $mysqli) {
-    sendTelegramMessage($token, $chat_id, 'Введите свой пол', 3, $mysqli);
+    sendTelegramMessage($token, $chat_id, 'Укажите свой пол', 3, $mysqli);
     $reg_step = 3;
     $sql = ("UPDATE users SET reg_step = '$reg_step' WHERE chat_id = '$chat_id'");
     $mysqli->query($sql);
