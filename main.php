@@ -23,7 +23,7 @@ $chat_id = $data['message']['chat']['id'] ?? $data['callback_query']['message'][
 $username = $data['message']['from']['username'] ?? $data['callback_query']['from']['username'];
 $text = $data['message']['text'] ?? $data['callback_query']['data'];
 //Проверка на запрещённые символы
-if (hasBackSlash($text) == true) {
+if (blackList($text) == true) {
     sendTelegramMessage($token, $chat_id, 'Найден запрещённый символ', 0, $mysqli);
     return;
 }
@@ -1939,7 +1939,7 @@ function sendTelegramMessage($token, $chat_id, $text, $reg_step, $mysqli) {
 }
 
 //Функция проверки строки на запрещённые символы
-function hasBackSlash($str) {
+function blackList($str) {
   $blacklist = array(
     "DROP",
     "DELETE",
