@@ -215,7 +215,7 @@ function showAlgorithm ($token, $chat_id, $mysqli) {
     }
     $result = $resultsql->fetch_all(MYSQLI_ASSOC);
     // Распределение по рейтингу
-    $averageRating = сalculationAverageRating ($mysqli);
+    $averageRating = calculationAverageRating ($mysqli);
     // Случайным образом выбераем строку из массива результатов
     $randomKey = array_rand($result);
     $rows = $result[$randomKey];
@@ -294,7 +294,7 @@ function showAlgorithm ($token, $chat_id, $mysqli) {
                                         // Если Рейтинг >= Среднее, то анкета Хорошая
 
 
-function сalculationAverageRating ($mysqli) {
+function calculationAverageRating ($mysqli) {
   $sqlGetRating = "SELECT rating FROM rating_users";
   $result = $mysqli->query($sqlGetRating);
   $countUsers = $result->num_rows;
