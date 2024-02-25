@@ -1,10 +1,10 @@
 <?php
 
 ini_set('log_errors', 1);
-ini_set('error_log', '/home/g/ghulqul/facehookapp.ru/public_html/source/FaceApp/PHP_errors_test3.log');
+ini_set('error_log', '/home/g/ghulqul/facehookapp.ru/public_html/source/FaceApp/PHP_errors_MVP.log');
 error_reporting(E_ERROR); // Устанавливаем уровень ошибок
 
-$token = '6660548794:AAHhy82DMJtws1NlMj7VIx0_zDw8c_MswWk';
+$token = '6708114039:AAFc8jfHMWWzdZ_Ux2klQBXXWhBiEd1dPg0';
 
 $host = 'localhost';
 $user = 'ghulqul_mvp';
