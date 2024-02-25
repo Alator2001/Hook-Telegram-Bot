@@ -7,9 +7,9 @@ error_reporting(E_ERROR); // Устанавливаем уровень ошиб�
 $token = '6660548794:AAHhy82DMJtws1NlMj7VIx0_zDw8c_MswWk';
 
 $host = 'localhost';
-$user = 'ghulqul_face_app';
+$user = 'ghulqul_mvp';
 $password = 'A951753d!81902018B';
-$database = 'ghulqul_face_app';
+$database = 'ghulqul_mvp';
 
 $data = json_decode(file_get_contents('php://input'), TRUE);
 //file_put_contents('file.txt', '$data: '.print_r($data, 1)."\n", FILE_APPEND);
@@ -3130,12 +3130,20 @@ function processSwitchCommand($token, $chat_id, $username, $text, $file_id, $mys
             registerStep_1($token, $chat_id, $mysqli);
             return;
         }
-        elseif (($text == '/startmatch' || $text == 'Поиск 🔎') && isset($showFlag ['main_menu_flag']) == true) {
-            $sqlFilter = ("UPDATE users SET main_menu_flag = false WHERE chat_id = '$chat_id'");
-            $mysqli->query($sqlFilter);
-            deleteMenu($chat_id, $token, $mysqli);
-            showAlgorithm ($token, $chat_id, $mysqli);
-            return;
+        elseif (($text == '/startmatch' || $text == 'Поиск') && isset($showFlag ['main_menu_flag']) == true) {
+            $sqlCheckCountUsers = "SELECT * FROM users";
+            $resultCheckCountUsers = $mysqli->query($sqlCheckCountUsers);
+            if ($resultCheckCountUsers->num_rows >= 50) {
+                $sqlFilter = ("UPDATE users SET main_menu_flag = false WHERE chat_id = '$chat_id'");
+                $mysqli->query($sqlFilter);
+                deleteMenu($chat_id, $token, $mysqli);
+                showAlgorithm ($token, $chat_id, $mysqli);
+                return;
+            }
+            else {
+                sendTelegramMessage($token, $chat_id, 'К сожалению в боте ещё мало анкет:( Поделись ссылкой с друзьями -> https://t.me/hook_app_bot, чтобы поиск открылся быстрее!', 0, $mysqli);
+                return;
+            }
         }
         else {
             sendTelegramMessage($token, $chat_id, 'Неверная команда', 0, $mysqli);
