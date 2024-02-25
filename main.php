@@ -1865,7 +1865,7 @@ function sendTelegramMessage($token, $chat_id, $text, $reg_step, $mysqli) {
                                 'text' => '👎',
                                 ),
                                 array(
-                                'text' => '🛑',
+                                'text' => '↩',
                                 ),
                                 array(
                                 'text' => 'Фильтр',
@@ -3692,7 +3692,7 @@ function processSwitchCommand($token, $chat_id, $username, $text, $file_id, $mys
                 return;
             }
         }
-        elseif ($text == '🛑') {
+        elseif ($text == '↩') {
             if ($showFlag['show_flag'] == true) {
                 $sqlLike = ("UPDATE users SET show_flag = FALSE WHERE chat_id = '$chat_id'");
             }
