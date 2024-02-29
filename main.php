@@ -30,8 +30,8 @@ $chat_id = $data['message']['chat']['id'] ?? $data['callback_query']['message'][
 $username = $data['message']['from']['username'] ?? $data['callback_query']['from']['username'];
 $text = $data['message']['text'] ?? $data['callback_query']['data'];
 //Проверка на запрещённые символы
-if (hasBackSlash($text) == true) {
-    sendTelegramMessage($token, $chat_id, 'Нельзя использовать "\"', 0, $mysqli);
+if (blackList($text) == true) {
+    sendTelegramMessage($token, $chat_id, 'Найден запрещённый символ', 0, $mysqli);
     return;
 }
 $location = $data['message']['location'];
@@ -1946,8 +1946,38 @@ function sendTelegramMessage($token, $chat_id, $text, $reg_step, $mysqli) {
 }
 
 //Функция проверки строки на запрещённые символы
-function hasBackSlash($str) {
-    return strpos($str, "\\") !== false;
+function blackList($str) {
+  $blacklist = array(
+    "DROP",
+    "DELETE",
+    "TRUNCATE",
+    "ALTER",
+    "UPDATE",
+    "INSERT",
+    "SELECT",
+    ";",
+    "--",
+    "#",
+    "\\",
+    "=",
+    ">",
+    "<",
+    ">=",
+    "<=",
+    "UNION",
+    "OR",
+    "AND",
+    "EXEC",
+    "CONCAT",
+  );
+
+// Проверка на наличие запрещенных слов
+  foreach ($blacklist as $word) {
+    if (stripos($str, $word) !== false) {
+        return true; // Найдено запрещенное слово
+    }
+  }
+
 }
 
 // Функция измерения дистанции между двумя точками геолокации
