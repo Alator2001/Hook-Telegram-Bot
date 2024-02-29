@@ -1,15 +1,22 @@
 <?php
 
 ini_set('log_errors', 1);
-ini_set('error_log', '/home/g/ghulqul/facehookapp.ru/public_html/source/FaceApp/PHP_errors_MVP.log');
-error_reporting(E_ERROR); // Устанавливаем уровень ошибок
+ini_set('error_log', '/home/g/ghulqul/facehookapp.ru/public_html/source/FaceApp/php_errors.log');
+error_reporting(E_ALL); // Устанавливаем уровень ошибок
 
-$token = '6708114039:AAFc8jfHMWWzdZ_Ux2klQBXXWhBiEd1dPg0';
+require __DIR__ . '/vendor/autoload.php';
 
-$host = 'localhost';
-$user = 'ghulqul_mvp';
-$password = 'A951753d!81902018B';
-$database = 'ghulqul_mvp';
+use Dotenv\Dotenv;
+
+$dotenv = Dotenv::createImmutable(__DIR__);
+$dotenv->load();
+
+// Получаем конфиденциальную информацию из переменных окружения
+$token = getenv('TOKEN');
+$host = getenv('HOST');
+$user = getenv('USER');
+$password = getenv('PASSWORD');
+$database = getenv('DATABASE');
 
 $data = json_decode(file_get_contents('php://input'), TRUE);
 //file_put_contents('file.txt', '$data: '.print_r($data, 1)."\n", FILE_APPEND);
