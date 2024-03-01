@@ -1971,13 +1971,17 @@ function blackList($str) {
     "CONCAT",
   );
 
-// Проверка на наличие запрещенных слов
-  foreach ($blacklist as $word) {
-    if (stripos($str, $word) !== false) {
+  // Разбиваем входную строку на слова
+  $words = preg_split('/\s+/', $str);
+
+  // Проверка на наличие запрещенных слов
+  foreach ($words as $word) {
+    if (in_array(strtoupper($word), $blacklist)) {
         return true; // Найдено запрещенное слово
     }
   }
 
+  return false; // Запрещенных слов не найдено
 }
 
 // Функция измерения дистанции между двумя точками геолокации
