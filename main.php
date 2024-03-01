@@ -2,7 +2,7 @@
 
 ini_set('log_errors', 1);
 ini_set('error_log', '/home/g/ghulqul/facehookapp.ru/public_html/source/FaceApp/php_errors.log');
-error_reporting(E_ALL); // Устанавливаем уровень ошибок
+error_reporting(E_ALL & ~E_NOTICE); // Устанавливаем уровень ошибок
 
 require __DIR__ . '/vendor/autoload.php';
 
@@ -559,12 +559,12 @@ function editTelegramMessage($token, $chat_id, $step, $mysqli) {
                         "text" => 'Моя анкета:',
                         'reply_markup' => json_encode(array(
                             'inline_keyboard' => array(
-                                array(
-                                    array(
-                                        'text' => 'Верификация: ✖️',
-                                        'callback_data' => '/verification',
-                                    ),
-                                ),
+                                // array(
+                                //     array(
+                                //         'text' => 'Верификация: ✖️',
+                                //         'callback_data' => '/verification',
+                                //     ),
+                                // ),
                                 array(
                                     array(
                                         'text' => 'Soul Mate тест: ✅',
@@ -608,12 +608,12 @@ function editTelegramMessage($token, $chat_id, $step, $mysqli) {
                     "text" => 'Моя анкета:',
                     'reply_markup' => json_encode(array(
                         'inline_keyboard' => array(
-                            array(
-                                array(
-                                    'text' => 'Верификация: ✅',
-                                    'callback_data' => '/verification',
-                                ),
-                            ),
+                            // array(
+                            //     array(
+                            //         'text' => 'Верификация: ✅',
+                            //         'callback_data' => '/verification',
+                            //     ),
+                            // ),
                             array(
                                 array(
                                     'text' => 'Soul Mate тест: ✅',
@@ -685,12 +685,12 @@ function editTelegramMessage($token, $chat_id, $step, $mysqli) {
                         "text" => 'Моя анкета:',
                         'reply_markup' => json_encode(array(
                             'inline_keyboard' => array(
-                                array(
-                                    array(
-                                        'text' => 'Верификация: ✖️',
-                                        'callback_data' => '/verification',
-                                    ),
-                                ),
+                                // array(
+                                //     array(
+                                //         'text' => 'Верификация: ✖️',
+                                //         'callback_data' => '/verification',
+                                //     ),
+                                // ),
                                 array(
                                     array(
                                         'text' => 'Soul Mate тест: ✅',
@@ -734,12 +734,12 @@ function editTelegramMessage($token, $chat_id, $step, $mysqli) {
                         "text" => 'Моя анкета:',
                         'reply_markup' => json_encode(array(
                             'inline_keyboard' => array(
-                                array(
-                                    array(
-                                        'text' => 'Верификация: ✅',
-                                        'callback_data' => '/verification',
-                                    ),
-                                ),
+                                // array(
+                                //     array(
+                                //         'text' => 'Верификация: ✅',
+                                //         'callback_data' => '/verification',
+                                //     ),
+                                // ),
                                 array(
                                     array(
                                         'text' => 'Soul Mate тест: ✅',
@@ -789,12 +789,12 @@ function editTelegramMessage($token, $chat_id, $step, $mysqli) {
                         "text" => 'Моя анкета:',
                         'reply_markup' => json_encode(array(
                             'inline_keyboard' => array(
-                                array(
-                                    array(
-                                        'text' => 'Верификация: ✖️',
-                                        'callback_data' => '/verification',
-                                    ),
-                                ),
+                                // array(
+                                //     array(
+                                //         'text' => 'Верификация: ✖️',
+                                //         'callback_data' => '/verification',
+                                //     ),
+                                // ),
                                 array(
                                     array(
                                         'text' => 'Soul Mate тест: ✖️',
@@ -838,12 +838,12 @@ function editTelegramMessage($token, $chat_id, $step, $mysqli) {
                         "text" => 'Моя анкета:',
                         'reply_markup' => json_encode(array(
                             'inline_keyboard' => array(
-                                array(
-                                    array(
-                                        'text' => 'Верификация: ✅',
-                                        'callback_data' => '/verification',
-                                    ),
-                                ),
+                                // array(
+                                //     array(
+                                //         'text' => 'Верификация: ✅',
+                                //         'callback_data' => '/verification',
+                                //     ),
+                                // ),
                                 array(
                                     array(
                                         'text' => 'Soul Mate тест: ✖️',
@@ -915,12 +915,12 @@ function editTelegramMessage($token, $chat_id, $step, $mysqli) {
                       "text" => 'Моя анкета:',
                       'reply_markup' => json_encode(array(
                           'inline_keyboard' => array(
-                              array(
-                                  array(
-                                      'text' => 'Верификация: ✖️',
-                                      'callback_data' => '/verification',
-                                  ),
-                              ),
+                            //   array(
+                            //       array(
+                            //           'text' => 'Верификация: ✖️',
+                            //           'callback_data' => '/verification',
+                            //       ),
+                            //   ),
                               array(
                                   array(
                                       'text' => 'Soul Mate тест: ✖️',
@@ -964,12 +964,12 @@ function editTelegramMessage($token, $chat_id, $step, $mysqli) {
                       "text" => 'Моя анкета:',
                       'reply_markup' => json_encode(array(
                           'inline_keyboard' => array(
-                              array(
-                                  array(
-                                      'text' => 'Верификация: ✅',
-                                      'callback_data' => '/verification',
-                                  ),
-                              ),
+                            //   array(
+                            //       array(
+                            //           'text' => 'Верификация: ✅',
+                            //           'callback_data' => '/verification',
+                            //       ),
+                            //   ),
                               array(
                                   array(
                                       'text' => 'Soul Mate тест: ✖️',
@@ -1351,12 +1351,12 @@ function sendTelegramMessage($token, $chat_id, $text, $reg_step, $mysqli) {
                     'disable_notification' => true,
                     'reply_markup' => json_encode(array(
                         'inline_keyboard' => array(
-                            array(
-                                array(
-                                    'text' => 'Верификация: ✖️',
-                                    'callback_data' => '/verification',
-                                ),
-                            ),
+                            // array(
+                            //     array(
+                            //         'text' => 'Верификация: ✖️',
+                            //         'callback_data' => '/verification',
+                            //     ),
+                            // ),
                             array(
                                 array(
                                     'text' => 'Soul Mate тест: ✅',
@@ -1399,12 +1399,12 @@ function sendTelegramMessage($token, $chat_id, $text, $reg_step, $mysqli) {
                     'disable_notification' => true,
                     'reply_markup' => json_encode(array(
                         'inline_keyboard' => array(
-                            array(
-                                array(
-                                    'text' => 'Верификация: ✅',
-                                    'callback_data' => '/verification',
-                                ),
-                            ),
+                            // array(
+                            //     array(
+                            //         'text' => 'Верификация: ✅',
+                            //         'callback_data' => '/verification',
+                            //     ),
+                            // ),
                             array(
                                 array(
                                     'text' => 'Soul Mate тест: ✅',
@@ -1474,12 +1474,12 @@ function sendTelegramMessage($token, $chat_id, $text, $reg_step, $mysqli) {
                     'disable_notification' => true,
                     'reply_markup' => json_encode(array(
                         'inline_keyboard' => array(
-                            array(
-                                array(
-                                    'text' => 'Верификация: ✖️',
-                                    'callback_data' => '/verification',
-                                ),
-                            ),
+                            // array(
+                            //     array(
+                            //         'text' => 'Верификация: ✖️',
+                            //         'callback_data' => '/verification',
+                            //     ),
+                            // ),
                             array(
                                 array(
                                     'text' => 'Soul Mate тест: ✅',
@@ -1522,12 +1522,12 @@ function sendTelegramMessage($token, $chat_id, $text, $reg_step, $mysqli) {
                     'disable_notification' => true,
                     'reply_markup' => json_encode(array(
                         'inline_keyboard' => array(
-                            array(
-                                array(
-                                    'text' => 'Верификация: ✅',
-                                    'callback_data' => '/verification',
-                                ),
-                            ),
+                            // array(
+                            //     array(
+                            //         'text' => 'Верификация: ✅',
+                            //         'callback_data' => '/verification',
+                            //     ),
+                            // ),
                             array(
                                 array(
                                     'text' => 'Soul Mate тест: ✅',
@@ -1574,12 +1574,12 @@ function sendTelegramMessage($token, $chat_id, $text, $reg_step, $mysqli) {
                     'disable_notification' => true,
                     'reply_markup' => json_encode(array(
                         'inline_keyboard' => array(
-                            array(
-                                array(
-                                    'text' => 'Верификация: ✖️',
-                                    'callback_data' => '/verification',
-                                ),
-                            ),
+                            // array(
+                            //     array(
+                            //         'text' => 'Верификация: ✖️',
+                            //         'callback_data' => '/verification',
+                            //     ),
+                            // ),
                             array(
                                 array(
                                     'text' => 'Soul Mate тест: ✖️',
@@ -1622,12 +1622,12 @@ function sendTelegramMessage($token, $chat_id, $text, $reg_step, $mysqli) {
                     'disable_notification' => true,
                     'reply_markup' => json_encode(array(
                         'inline_keyboard' => array(
-                            array(
-                                array(
-                                    'text' => 'Верификация: ✅',
-                                    'callback_data' => '/verification',
-                                ),
-                            ),
+                            // array(
+                            //     array(
+                            //         'text' => 'Верификация: ✅',
+                            //         'callback_data' => '/verification',
+                            //     ),
+                            // ),
                             array(
                                 array(
                                     'text' => 'Soul Mate тест: ✖️',
@@ -1697,12 +1697,12 @@ function sendTelegramMessage($token, $chat_id, $text, $reg_step, $mysqli) {
                   'disable_notification' => true,
                   'reply_markup' => json_encode(array(
                       'inline_keyboard' => array(
-                          array(
-                              array(
-                                  'text' => 'Верификация: ✖️',
-                                  'callback_data' => '/verification',
-                              ),
-                          ),
+                        //   array(
+                        //       array(
+                        //           'text' => 'Верификация: ✖️',
+                        //           'callback_data' => '/verification',
+                        //       ),
+                        //   ),
                           array(
                               array(
                                   'text' => 'Soul Mate тест: ✖️',
@@ -1745,12 +1745,12 @@ function sendTelegramMessage($token, $chat_id, $text, $reg_step, $mysqli) {
                   'disable_notification' => true,
                   'reply_markup' => json_encode(array(
                       'inline_keyboard' => array(
-                          array(
-                              array(
-                                  'text' => 'Верификация: ✅',
-                                  'callback_data' => '/verification',
-                              ),
-                          ),
+                        //   array(
+                        //       array(
+                        //           'text' => 'Верификация: ✅',
+                        //           'callback_data' => '/verification',
+                        //       ),
+                        //   ),
                           array(
                               array(
                                   'text' => 'Soul Mate тест: ✖️',
